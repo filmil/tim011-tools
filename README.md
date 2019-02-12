@@ -19,4 +19,4 @@ For detailed usage, type:
 ```
 timdisk.sh -h
 ```
-
+Empty image that is provided is made with boot sector extracted using dsktools and may not be as clean as it could be. But, it is OK enough to recreate TIM system disk. Further investigation is required...
