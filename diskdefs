@@ -1,0 +1,101 @@
+# TIM011/MM6  Micromint SB180 - DSDD 3.5" - 1024 x 5
+diskdef tim011
+  seclen 1024
+  tracks 160
+  sectrk 5
+  secbase 17
+  blocksize 2048
+  maxdir 256
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM1  Micromint SB180 Native 1 - DSDD 48 tpi 5.25" - 512 x 10
+diskdef mm1
+  seclen 512
+  tracks 80
+  sectrk 10
+  secbase 17
+  blocksize 2048
+  maxdir 128
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM2  Micromint SB180 Native 2 - DSDD 96 tpi 5.25" - 1024 x 5
+diskdef mm2
+  seclen 1024
+  tracks 160
+  sectrk 5
+  secbase 17
+  blocksize 2048
+  maxdir 256
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM3  Micromint SB180 Native 3 - SSDD 48 tpi 5.25" - 512 x 10
+diskdef mm3
+  seclen 512
+  tracks 40
+  sectrk 10
+  blocksize 2048
+  maxdir 64
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM4  Micromint SB180 Native 4 - SSDD 96 tpi 5.25" - 1024 x 5
+diskdef mm4
+  seclen 1024
+  tracks 80
+  sectrk 5
+  blocksize 2048
+  maxdir 128
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM5  Micromint SB180 - SSDD 3.5" - 1024 x 5
+diskdef mm5
+  seclen 1024
+  tracks 80
+  sectrk 5
+  blocksize 2048
+  maxdir 128
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM6  Micromint SB180 - DSDD 3.5" - 1024 x 5
+diskdef mm6
+  seclen 1024
+  tracks 160
+  sectrk 5
+  secbase 17
+  blocksize 2048
+  maxdir 256
+  skew 1
+  boottrk 2
+  os 2.2
+end
+
+# MM7  MicroMint SB180 - DSDD 48 tpi 5.25" - 512 x 10
+diskdef mm7
+  seclen 512
+  tracks 80
+  sectrk 10
+  secbase 27
+  blocksize 2048
+  maxdir 128
+  skew 1
+  boottrk 0
+  os 2.2
+end
+
