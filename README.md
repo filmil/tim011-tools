@@ -37,6 +37,7 @@ Currently, only two fonts for TIM-011 are known, one inside ASC.COM (English) an
 To be able to generate COM file with new font, the script needs DEFAULT.COM that is also included here (this is just a copy of ASC.COM).
 
 ![English font](./images/timfont0.png)
+
 Each TIM-011 character is defined with 10 bytes.
 Two lowest bits of each definition byte aren't used, so effective size is 6x10 pixels.
 When generating PNG, those 2 lower bits are colored differently and should not be used for defining the characters.
