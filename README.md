@@ -53,12 +53,16 @@ I have found a wonderful CP/M emulator that enabled me to easy integrate simulat
 [ANSI CP/M Emulator](https://github.com/jhallen/cpm)
 
 Since that emulator emulates Z80 at full speed of host processor, pauses were introduced in video memory access, to kind-of simulate the speed of real TIM-011.
-Take note that speed of emulator nad real TIM-011 aren't the same.
+Take note that speed of emulator and real TIM-011 aren't the same.
 
-Modified emulator can be found inside CPMEmulator directory. To compile it, for now you'll need Linux and these libraries:
+Modified emulator can be found inside CPMEmulator directory.
+To compile it, for now you'll need Linux and these libraries:
 
 * for Debian/Ubuntu-based distributions: libx11-dev libxext-dev
 * for Arch-based distributions: lib32-libx11 lib32-libxext
+
+Window and video display code was taken from an old project of mine
+(an assignment I gave to students a couple of years back, where thay had to implement iz x86 assembly basic pixel drawing functions into a video memory matrix, while I provided them with all the surrounding code for simulating such video output).
 
 The modifications to the emulator:
 
