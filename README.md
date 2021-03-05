@@ -1,6 +1,6 @@
 # tim011-tools
 
-The home of timdisk and timfont pograms.
+The home of various TIM-011 related projects.
 
 ## timdisk
 
@@ -46,4 +46,26 @@ Here are some examples of fonts done by Marko Šolajić:
 
 ![Example 1](./images/timfont1.jpg)
 ![Example 2](./images/timfont2.jpg)
+
+## CP/M emulator with TIM-011 video output simulation
+I have found a wonderful CP/M emulator that enabled me to easy integrate simulation of TIM-011 video output:
+
+[ANSI CP/M Emulator](https://github.com/jhallen/cpm)
+
+Since that emulator emulates Z80 at full speed of host processor, pauses were introduced in video memory access, to kind-of simulate the speed of real TIM-011.
+Take note that speed of emulator nad real TIM-011 aren't the same.
+
+Modified emulator can be found inside CPMEmulator directory. To compile it, for now you'll need Linux and these libraries:
+
+* for Debian/Ubuntu-based distributions: libx11-dev libxext-dev
+* for Arch-based distributions: lib32-libx11 lib32-libxext
+
+The modifications to the emulator:
+
+* main.c
+    * emulator loop inside main() function was moved into separate function/thread
+    * input() and output() functions were extended to check for TIM-011 video memory access
+    * main() function is extended to handle X11 window manpulation and drawing
+* Makefile
+    * linker options were added for required libraries
 
