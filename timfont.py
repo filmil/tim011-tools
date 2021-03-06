@@ -65,7 +65,8 @@ Be sure that program you use for editing PNG won't
 change its format: 1 byte per pixel, greyscale, no
 alpha channel, no layers or anything else. Photoshop
 users should use the "Flatten Layers" option before
-saving their PNG file."""
+saving their PNG file. GIMP users should export the
+image as "8bpc GRAY"."""
 
 parser = argparse.ArgumentParser(description=about, formatter_class=argparse.RawDescriptionHelpFormatter,epilog=epilog)
 parser.add_argument('file', metavar='file', nargs=2, default="", help='(path to) COM/PNG file')
