@@ -1,0 +1,400 @@
+/*
+    Graphics library for TIM-011, to be used with Small C compiler.
+    It uses Small C function calling mechanism, but it could be easily
+    modified for other schemes.
+
+    TIMGRAPH.LIB (c) 2021  Žarko Živanov, Marko Šolajić
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+    NOTICE:
+        If index-based tiles are used, include for them should be placed
+        right after include for this library!
+*/
+
+#asm
+
+; Pixel plot routine based on TIM-011 video memory layout, 512x256 with 2-bit pixels in shades of green or gray
+; plotxy (int x, int y, int col)
+; x = 0..511, y = 0..255, col = 0 ..3
+; offset = int(x/4)*256 + y + 8000h
+; pixelmask = col << ((x%4)*2)
+plotxy:
+    POP AF  ; return address
+    POP DE  ; col
+    POP BC  ; y
+    POP HL  ; x
+    PUSH    HL  ; Small C requires unmodified SP
+    PUSH    BC
+    PUSH    DE
+    PUSH    AF
+
+    PUSH DE ; save col
+    PUSH HL ; save x
+
+    SRL H   ; 16bit shift left 2
+    RR L
+    SRL H
+    SCF     ; add 80H to final value
+    RR L    ; L = int(x/4)
+    LD B, L ; B = (x/4) + 80H, C = y, BC = int(x/4)*256 + y + 8000h
+
+    ;LD A, L ; 4 cycles
+    ;OR A ; 4 cycles - clear carry flag
+    ;RRA ; 4 cycles
+    ;SCF ; 4 cycles - set carry flag
+    ;RRA ; 4 cycles - bit7 is set automatically
+    ;LD B, A ; 4 cycles - set result to B - C is already set
+
+    POP DE  ; x from stack
+    LD A, E
+    AND 3H  ; A = x%4
+
+    LD DE, plottbl
+    LD H, 0
+    LD L, A
+    ADD HL, DE  ; HL = plottbl + x mod 4
+
+    IN A,(C) ; read pixels
+    AND (HL) ; clear two bits
+
+    POP DE  ; col from stack
+    SLA E
+    SLA E   ; DE = col << 2
+    JP Z, plotout
+
+    ADD HL, DE  ; add offset for color table
+    OR (HL)
+
+plotout:
+    OUT (C), A  ; write pixels
+    RET
+
+plottbl:
+    DB 11111100B, 11110011B, 11001111B, 00111111B   ; inverted mask for color 00B
+    DB 00000001B, 00000100B, 00010000B, 01000000B   ; masks for color 01B
+    DB 00000010B, 00001000B, 00100000B, 10000000B   ; masks for color 10B
+    DB 00000011B, 00001100B, 00110000B, 11000000B   ; masks for color 11B
+
+
+; sets the value of TIM-011 scroll register at IO adress 00D0h
+; scroll(n)
+; n = 0 .. 255
+scroll:
+    POP HL  ; return address
+    POP DE  ; scroll
+    PUSH    DE
+    PUSH    HL  ; Small C requires unmodified SP
+    LD BC, 00D0H
+    OUT (C), E
+    RET
+#endasm
+
+/*
+    TILE routines
+
+    Tiles/sprites are 16x16 pixels graphic blocks. They can be positioned on 4-pixel boundaries
+    anywhere inside TIM-011 video memory. This gives 0-127 for X and 0-63 for Y coordinate.
+*/
+
+#asm
+; tile size is 16x16 pixels, which is 4 bytes wide (2 bits per pixel) and 16 bytes high
+; Tile data is organized by columns because TIM-011 video memory is organized by columns
+SPRWBYT: EQU 4
+SPRHPIX: EQU 16
+
+; helper routine to calculate tile address
+; if address in HL is 00-FFH, it is considered that this is tile number, and real address
+;   is calculated as timtiles + L*64
+; if if address in HL is greated than 0100H, it is considered as memory address
+tileaddr:
+    INC H
+    DEC H
+    JP NZ, tileaddr0
+    ; shift left by 6 positions
+    ADD HL, HL
+    ADD HL, HL
+    ADD HL, HL
+    ADD HL, HL
+    ADD HL, HL
+    ADD HL, HL
+    ; add base tile address
+    PUSH DE
+    LD DE, timtiles
+    ADD HL, DE
+    POP DE
+tileaddr0:
+    RET
+
+; puts tile on screen using OR with current content
+; ortile(x, y, addr)
+; x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
+; ofset = x*256 + y*4 + 8000H
+ortile:
+    POP AF  ; return address
+    POP HL  ; addr
+    POP DE  ; y
+    POP BC  ; x
+    PUSH    BC  ; Small C requires unmodified SP
+    PUSH    DE
+    PUSH    HL
+    PUSH    AF
+    CALL tileaddr
+
+    LD B, C
+    SLA B
+    SCF
+    RR B
+    SLA E
+    SLA E
+    LD C, E
+
+    LD D, SPRWBYT
+ortile1:
+    PUSH BC
+    LD E, SPRHPIX
+
+ortile2:
+    IN A,(C)
+    OR (HL)
+    OUT (C), A
+
+    INC HL
+    INC BC
+    DEC E
+    JP NZ, ortile2
+
+    POP BC
+    INC B
+    DEC D
+    JP NZ, ortile1
+
+    RET
+
+; gets tile from screen
+; gettile(x, y, addr)
+; x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
+; ofset = x*256 + y*4 + 8000H
+gettile:
+    POP AF  ; return address
+    POP HL  ; addr
+    POP DE  ; y
+    POP BC  ; x
+    PUSH    BC  ; Small C requires unmodified SP
+    PUSH    DE
+    PUSH    HL
+    PUSH    AF
+    CALL tileaddr
+
+    LD B, C
+    SLA B
+    SCF
+    RR B
+    SLA E
+    SLA E
+    LD C, E
+
+    LD D, SPRWBYT
+gettile1:
+    PUSH BC
+    LD E, SPRHPIX
+
+gettile2:
+    IN A,(C)
+    LD (HL), A
+
+    INC HL
+    INC BC
+    DEC E
+    JP NZ, gettile2
+
+    POP BC
+    INC B
+    DEC D
+    JP NZ, gettile1
+
+    RET
+
+; puts tile to screen
+; puttile(x, y, addr)
+; x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
+; ofset = x*256 + y*4 + 8000H
+puttile:
+    POP AF  ; return address
+    POP HL  ; addr
+    POP DE  ; y
+    POP BC  ; x
+    PUSH    BC  ; Small C requires unmodified SP
+    PUSH    DE
+    PUSH    HL
+    PUSH    AF
+    CALL tileaddr
+
+    LD B, C
+    SLA B
+    SCF
+    RR B
+    SLA E
+    SLA E
+    LD C, E
+
+    LD D, SPRWBYT
+puttile1:
+    PUSH BC
+    LD E, SPRHPIX
+
+puttile2:
+    LD A,(HL)
+    OUT (C), A
+
+    INC HL
+    INC BC
+    DEC E
+    JP NZ, puttile2
+
+    POP BC
+    INC B
+    DEC D
+    JP NZ, puttile1
+
+    RET
+
+; flips tile pixels horizontaly
+; flptilex(addr)
+; addr 0-255 index based, or full address
+flptilex:
+    POP BC  ; return address
+    POP HL  ; addr
+    PUSH HL
+    PUSH BC
+    CALL tileaddr
+    EX DE,HL
+
+    ; first, swap columns 0 and 3
+    LD H, D
+    LD A, SPRHPIX*3
+    ADD A, E        ; A = E + SPRHPIX*3
+    JP NC, flptilex0
+    INC H
+flptilex0:
+    LD L, A         ; HL = DE + SPRHPIX*3
+
+    ; column 0 and 3 swapping
+    LD B, SPRHPIX
+flptilex1:
+    LD A, (DE)
+    CALL flip1byt
+    EX AF,AF'
+    LD A, (HL)
+    CALL flip1byt
+    LD (DE), A
+    EX AF,AF'
+    LD (HL), A
+
+    INC HL
+    INC DE
+    DEC B
+    JP NZ, flptilex1
+
+    ; second, swap columns 1 and 2
+    LD H, D
+    LD A, SPRHPIX
+    ADD A, E        ; A = E + SPRHPIX
+    JP NC, flptilex2
+    INC H
+flptilex2:
+    LD L, A         ; HL = DE + SPRHPIX
+
+    ; column 1 and 2 swapping
+    LD B, SPRHPIX
+flptilex3:
+    LD A, (DE)
+    CALL flip1byt
+    EX AF,AF'
+    LD A, (HL)
+    CALL flip1byt
+    LD (DE), A
+    EX AF,AF'
+    LD (HL), A
+
+    INC HL
+    INC DE
+    DEC B
+    JP NZ, flptilex3
+
+    RET
+
+; helper function for flptilex
+; flips 4 pixels inside one byte
+;   7   6   5   4   3   2   1   0       start positions
+;   <2  <2  >2  >2  <2  <2  >2  >2      movement to get to final position
+;   1   0   3   2   5   4   7   6       final positions
+flip1byt:
+    LD C,A
+    RRC C
+    RRC C   ; 10765432
+    RLCA
+    RLCA    ; 54321076
+    XOR C    
+    AND       00110011B
+    XOR C   ; 10325476
+    RET
+
+; flips tile pixels vertically
+; flptiley(addr)
+; addr 0-255 index based, or full address
+flptiley:
+    POP BC  ; return address
+    POP HL  ; addr
+    PUSH HL
+    PUSH BC
+    CALL tileaddr
+    EX DE,HL
+
+    LD B, 04H
+flptiley0:
+    LD C, SPRHPIX/2
+    LD H, D
+    LD A, SPRHPIX-1
+    ADD A, E        ; A = E + SPRHPIX-1
+    JP NC, flptiley1
+    INC H
+flptiley1:
+    LD L, A         ; HL = DE + SPRHPIX-1
+    PUSH HL
+
+flptiley2:
+    LD A,(DE)
+    EX AF,AF'
+    LD A,(HL)
+    LD (DE), A
+    EX AF,AF'
+    LD (HL), A
+    INC DE
+    DEC HL
+    DEC C
+    JP NZ, flptiley2
+
+    POP DE
+    INC DE
+    DEC B
+    JP NZ, flptiley0
+
+    RET
+
+timtiles:
+#endasm
+
