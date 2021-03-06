@@ -1,6 +1,6 @@
 # tim011-tools
 
-The home of various TIM-011 related projects.
+The home of various TIM-011 related projects. All code made by me is licensed under GPL 3 or later.
 
 ## timdisk
 
