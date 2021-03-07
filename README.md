@@ -102,7 +102,8 @@ If indexes are to be used, right after including this library an include with ti
 ```
 Tile data can be created using TimTile.
 
-Examples of usage can be found in timexam.c. You can compile it by using CP/M emulator and Small C compiler:
+Examples of usage can be found in timexam.c, while sprites.h has sprite definitions from sprites.png.
+You can compile it by using CP/M emulator and Small C compiler:
 ```
 ./cpm cc timexam
 ./cpm zsm timexam
