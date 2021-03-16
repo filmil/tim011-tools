@@ -71,25 +71,41 @@ Byte 00 holds pixels (0,0)-(3,0) and so on.
 
 Library consists of these routines:
 
-* plotxy (int x, int y, int col)
+* plotxy (x, y, col) (Z80 assembly)
     * x = 0..511, y = 0..255, col = 0 ..3
     * plots pixel at specified coordinates
-* scroll(n)
+    * does not check for out-of-screen values!
+* line(col, x0, y0, x1, y1) (Z80 assembly)
+    * x0,x1 = 0..511, y0,y1 = 0..255, col = 0 ..3
+    * draws a line using a Bresenham algorithm from https://github.com/MiguelVis/xpcw/blob/master/xdraw.h
+    * does not check for out-of-screen values!
+* circle(x, y, radius, col) (Small C)
+    * x = 0..511, y = 0..255, radius = 1..127, col = 0 ..3
+    * draws a circle at specified coordinates, copied from https://github.com/MiguelVis/xpcw/blob/master/xdraw.h
+    * does not check for out-of-screen values!
+* box(x0, y0, x1, y1, col) (Small C)
+    * x0,x1 = 0..511, y0,y1 = 0..255, col = 0 ..3
+    * draws a box
+    * does not check for out-of-screen values!
+* scroll(n) (Z80 assembly)
     * n = 0 .. 255
     * sets the value of TIM-011 scroll register at IO adress 00D0h
-* ortile(x, y, addr)
+* ortile(x, y, addr) (Z80 assembly)
     * x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
     * puts tile from memory to screen using OR with current content
-* gettile(x, y, addr)
+    * does not check for out-of-screen values!
+* gettile(x, y, addr) (Z80 assembly)
     * x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
     * gets tile from screen and stores in memory
-* puttile(x, y, addr)
+    * does not check for out-of-screen values!
+* puttile(x, y, addr) (Z80 assembly)
     * x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
     * puts tile from memory to screen
-* flptilex(addr)
+    * does not check for out-of-screen values!
+* flptilex(addr) (Z80 assembly)
     * addr 0-255 index based, or full address
     * flips tile pixels horizontaly
-* flptiley(addr)
+* flptiley(addr) (Z80 assembly)
     * addr 0-255 index based, or full address
     * flips tile pixels vertically
 
@@ -115,8 +131,6 @@ and then inside the emulator:
 timexam
 bye
 ```
-
-TODO: line, circle, box, ... drawing routines
 
 ## TimTile
 

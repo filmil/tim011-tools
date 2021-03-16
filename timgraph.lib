@@ -101,7 +101,367 @@ scroll:
     LD BC, 00D0H
     OUT (C), E
     RET
+
+
+; draws a line from x0,y0 to x1,y1
+; line(col, x0, y0, x1, y1)
+_linxpos:   DB 0    ; current x%4 value
+_lindx:     DW 0    ; abs(x1-x0)
+_lindxneg:  DW 0    ; -abs(x1-x0)
+_lindy:     DW 0    ; abs(y1-y0)
+_linxleft   DW 0    ; how many x movements is left
+_linyleft:  DW 0    ; how many y movements is left
+_linsy:     DB 0    ; 1 or -1(255)
+_linerr:    DW 0
+line:
+    POP AF  ; return address
+    EX AF,AF'
+
+    ; get coordinates from stack
+    POP BC  ; y1
+    POP HL  ; x1
+    PUSH HL
+    EXX     ; BC' = y1, HL' = x1
+    POP DE  ; x1
+    POP BC  ; y0
+    POP HL  ; x0
+
+    ; compare x0 and x1 - both positive numbers, can compare with simpler code
+    AND A   ; clear carry
+    SBC HL, DE
+    ADD HL, DE
+    JP C, _lindxdy
+    EXX
+
+    ; NOW: HL,BC - x0,y0     HL',BC' - x1,y1     where x0<=x1 => sx = 1, dx >=0
+
+_lindxdy:
+    ; calculate dx, dy and sy
+    LD (_linxleft), HL  ; x0
+    LD (_linyleft), BC  ; y0
+    LD (_lindx), HL     ; x0
+    LD (_lindy), BC     ; y0
+    EXX ; HL,BC - x1,y1
+    PUSH HL
+    PUSH BC
+    LD DE, (_lindx)
+    AND A
+    SBC HL, DE  ; x1-x0
+    LD (_lindx), HL
+    LD (_linxleft), HL
+    LD (_linerr), HL    ; assume err = dx
+    ; calculate -dx
+    LD A,H      ; negate HL
+    XOR 0FFH
+    LD H,A
+    LD A,L
+    XOR 0FFH
+    LD L,A
+    LD DE, 1    ; add 1
+    AND A
+    ADD HL, DE
+    LD (_lindxneg), HL  ; _lindxneg = -dx
+    ; dy = y1-y0; if(dy<0) dy=-dy; sy = y0<y1 ? 1 : -1;
+    POP HL  ; 
+    LD A, 1
+    LD (_linsy), A      ; assume sy = 1
+    ; calculate y1-y0
+    LD DE, (_lindy)
+    AND A
+    SBC HL, DE  ; y1-y0
+    JP NC, _lindxdy1
+    ; calculate -dy
+    LD A,H      ; negate HL
+    XOR 0FFH
+    LD H,A
+    LD A,L
+    XOR 0FFH
+    LD L,A
+    LD DE, 1    ; add 1
+    AND A
+    ADD HL, DE
+    ; sy = -1
+    LD A, 0FFH
+    LD (_linsy), A
+_lindxdy1:
+    LD (_lindy), HL
+    LD (_linyleft), HL
+    POP HL  ; x0
+    EXX ; HL,BC - x0,y0
+
+_linerr1:    ; err = (dx>dy ? dx : -dy) >> 1;   it is already assumed err = dx
+    PUSH HL
+    ; compare dx and dy - both positive numbers, can compare with simpler code
+    LD HL, (_lindx)
+    LD DE, (_lindy)
+    AND A
+    SBC HL, DE
+    JP NC, _linerrsh
+_linerr2:
+    EX DE,HL    ; HL = _lindy
+    LD A,H      ; negate HL
+    XOR 0FFH
+    LD H,A
+    LD A,L
+    XOR 0FFH
+    LD L,A
+    LD DE, 1    ; add 1
+    AND A
+    ADD HL, DE
+_linerrsh:
+    ; >> 1
+    SRA H
+    RR L
+    LD (_linerr), HL
+    POP HL
+
+_linpix:
+    ; calculate IO address and mask, from plotxy
+    POP DE  ; col
+    PUSH DE ; save col
+    PUSH HL ; save x
+
+    SRL H   ; 16bit shift left 2
+    RR L
+    SRL H
+    SCF     ; add 80H to final value
+    RR L    ; L = int(x/4)
+    LD B, L ; B = (x/4) + 80H, C = y, BC = int(x/4)*256 + y + 8000h
+
+    POP DE  ; x from stack
+    LD A, E
+    AND 3H  ; A = x%4
+    LD (_linxpos), A
+
+    LD DE, plottbl
+    LD H, 0
+    LD L, A
+    ADD HL, DE  ; HL = plottbl + x mod 4
+
+    ; NOW: HL - ponts to clear mask, BC - points to IO
+
+    LD A, (HL)  ; A - clear mask
+    POP DE  ; col from stack
+    SLA E
+    SLA E   ; DE = col << 2
+    ADD HL, DE
+    INC DE
+    DEC DE
+    JP Z, _linblack
+    LD D, (HL)
+_linblack:
+    LD E, A
+
+    ; NOW: D - set mask, E - clear mask, BC - points to IO
+
+_linloop:
+    IN A,(C)    ; read pixels
+    AND E       ; clear two bits
+    OR  D       ; set pixels
+    OUT (C), A
+
+    ; check if all pixels are drawn (_linxleft == _linyleft == 0)
+    LD HL, _linxleft
+    LD A, (HL)
+    INC HL
+    OR (HL)
+    INC HL
+    OR (HL)
+    INC HL
+    OR (HL)
+    JP Z, _linend
+
+    PUSH DE
+    ; e2 = err; if(e2 >-dx) { err -= dy; x0 += sx; }
+    LD DE, (_linerr)    ; e2 = err
+    PUSH DE ; e2
+    LD HL, (_lindxneg)
+
+    ;AND A
+    ;SBC HL, DE
+    ;JP NC, _line21
+
+    ; compare -dx < e2
+    LD A,H
+    XOR D
+    JP M,_lincmp12
+    SBC HL,DE
+    JR NC,_lincmp13
+_lincmp11:
+    JP _lincmp15
+_lincmp12:
+    BIT 7,D
+    JR Z,_lincmp15
+_lincmp13:
+    OR A
+_lincmp14:
+    JP NC, _line21
+_lincmp15:
+
+    ; err -= dy
+    POP HL
+    PUSH HL
+    LD DE, (_lindy)
+    AND A
+    SBC HL, DE
+    LD (_linerr), HL
+    ; inc x coordinate = rotate masks, inc IO byte column
+    POP HL
+    POP DE
+    RLC D
+    RLC D
+    RLC E
+    RLC E
+    PUSH DE
+    ; check if next column
+    LD A, (_linxpos)
+    INC A
+    AND 03H
+    LD (_linxpos),A
+    JP NZ, _line20
+    ; next byte column
+    INC B
+_line20:
+    ; dec _linxleft
+    PUSH HL
+    LD HL, (_linxleft)
+    DEC HL
+    LD (_linxleft), HL
+
+_line21:
+    POP HL
+    ; if(e2 < dy) { err += dx; y0 += sy; }
+    LD DE,(_lindy)
+
+    ;EX DE,HL
+    ;AND A
+    ;SBC HL,DE   ; dy-e2
+    ;JP NC, _linnext
+
+    ; compare e2 < dy
+    LD A,H
+    XOR D
+    JP M,_lincmp22
+    SBC HL,DE
+    JR NC,_lincmp23
+_lincmp21:
+    JP _lincmp25
+_lincmp22:
+    BIT 7,D
+    JR Z,_lincmp25
+_lincmp23:
+    OR A
+_lincmp24:
+    JP NC, _linnext
+_lincmp25:
+
+    ; err += dx
+    LD HL,(_linerr)
+    LD DE,(_lindx)
+    ADD HL,DE
+    LD (_linerr),HL
+    ; inc/dec y coordinate = go to next/previous byte in column
+    LD A,(_linsy)
+    ADD A,C
+    LD C,A
+    ; dec _linyleft
+    PUSH HL
+    LD HL, (_linyleft)
+    DEC HL
+    LD (_linyleft), HL
+    POP HL
+_linnext:
+    POP DE
+    JP _linloop
+
+_linend:
+    PUSH BC
+    PUSH BC
+    PUSH BC
+    PUSH BC
+    PUSH BC
+    EX AF,AF'
+    PUSH AF
+    RET
+
 #endasm
+
+/* 16bit signed compare, Vladimir Savic
+start:
+    LD A,H
+    XOR D
+    JP M,labela2
+    SBC HL,DE
+    JR NC,labela3
+labela1:
+    SCF
+    JP kraj
+labela2:
+    BIT 7,D
+    JR Z,labela1
+labela3:
+    OR A
+kraj:
+; ako JE carry setovan, HL<DE
+; ako carry NIJE setovan HL>=DE
+*/
+
+
+/*
+
+    Drawing routines taken from
+    https://github.com/MiguelVis/xpcw
+
+*/
+
+circle(x0, y0, radius, col)
+int x0, y0, radius, col;
+{
+	int x, xh;
+	int y, yh;
+	int decision;
+
+	x = radius;
+	y = 0;
+	decision = 1 - x;
+
+	while(x >= y) {
+
+		/* The PCW pixels are double in high */
+
+		xh = x >> 1;  /* xh = x / 2 */
+		yh = y >> 1;  /* yh = y / 2 */
+
+		plotxy( x + x0,  yh + y0, col);
+		plotxy( y + x0,  xh + y0, col);
+		plotxy(-x + x0,  yh + y0, col);
+		plotxy(-y + x0,  xh + y0, col);
+		plotxy(-x + x0, -yh + y0, col);
+		plotxy(-y + x0, -xh + y0, col);
+		plotxy( x + x0, -yh + y0, col);
+		plotxy( y + x0, -xh + y0, col);
+
+		y++;
+
+		if(decision <= 0) {
+			decision += 2 * y + 1;
+		}
+		else {
+			x--;
+			decision += 2 * (y - x) + 1;
+		}
+	}
+}
+
+
+box(x0, y0, x1, y1, col)
+int x0, y0, x1, y1, col;
+{
+    line(col, x0, y0, x1, y0);
+    line(col, x0, y1, x1, y1);
+    line(col, x0, y0, x0, y1);
+    line(col, x1, y0, x1, y1);
+}
 
 /*
     TILE routines
