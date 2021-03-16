@@ -52,6 +52,7 @@ plotxy:
     RR L    ; L = int(x/4)
     LD B, L ; B = (x/4) + 80H, C = y, BC = int(x/4)*256 + y + 8000h
 
+    ; this code is faster, but does not work for x>255
     ;LD A, L ; 4 cycles
     ;OR A ; 4 cycles - clear carry flag
     ;RRA ; 4 cycles
@@ -131,12 +132,12 @@ line:
     SBC HL, DE
     ADD HL, DE
     JP C, _lindxdy
-    EXX
+    EXX     ; swap if x1<x0
 
     ; NOW: HL,BC - x0,y0     HL',BC' - x1,y1     where x0<=x1 => sx = 1, dx >=0
 
+; calculate dx, dy and sy
 _lindxdy:
-    ; calculate dx, dy and sy
     LD (_linxleft), HL  ; x0
     LD (_linyleft), BC  ; y0
     LD (_lindx), HL     ; x0
@@ -144,6 +145,7 @@ _lindxdy:
     EXX ; HL,BC - x1,y1
     PUSH HL
     PUSH BC
+    ; calculate dx, xleft=dx and assume err=dx
     LD DE, (_lindx)
     AND A
     SBC HL, DE  ; x1-x0
@@ -162,7 +164,7 @@ _lindxdy:
     ADD HL, DE
     LD (_lindxneg), HL  ; _lindxneg = -dx
     ; dy = y1-y0; if(dy<0) dy=-dy; sy = y0<y1 ? 1 : -1;
-    POP HL  ; 
+    POP HL  ; y1
     LD A, 1
     LD (_linsy), A      ; assume sy = 1
     ; calculate y1-y0
@@ -184,13 +186,14 @@ _lindxdy:
     LD A, 0FFH
     LD (_linsy), A
 _lindxdy1:
+    ; store calculated values
     LD (_lindy), HL
     LD (_linyleft), HL
-    POP HL  ; x0
+    POP HL  ; x1
     EXX ; HL,BC - x0,y0
 
-_linerr1:    ; err = (dx>dy ? dx : -dy) >> 1;   it is already assumed err = dx
-    PUSH HL
+_linerr1:       ; err = (dx>dy ? dx : -dy) >> 1;   it is already assumed err = dx
+    PUSH HL     ; x0
     ; compare dx and dy - both positive numbers, can compare with simpler code
     LD HL, (_lindx)
     LD DE, (_lindy)
@@ -213,10 +216,10 @@ _linerrsh:
     SRA H
     RR L
     LD (_linerr), HL
-    POP HL
+    POP HL      ; x0
 
 _linpix:
-    ; calculate IO address and mask, from plotxy
+    ; calculate IO address and mask, taken from plotxy
     POP DE  ; col
     PUSH DE ; save col
     PUSH HL ; save x
@@ -244,21 +247,22 @@ _linpix:
     POP DE  ; col from stack
     SLA E
     SLA E   ; DE = col << 2
-    ADD HL, DE
-    INC DE
+    ADD HL, DE  ; HL now points to one of color masks
+    INC DE      ; check if color was 0
     DEC DE
-    JP Z, _linblack
+    JP Z, _linblack ; if yes, leave set mask at zero
     LD D, (HL)
 _linblack:
     LD E, A
 
     ; NOW: D - set mask, E - clear mask, BC - points to IO
 
+; main line drawing loop
 _linloop:
     IN A,(C)    ; read pixels
     AND E       ; clear two bits
     OR  D       ; set pixels
-    OUT (C), A
+    OUT (C), A  ; wtite to video memory
 
     ; check if all pixels are drawn (_linxleft == _linyleft == 0)
     LD HL, _linxleft
@@ -271,15 +275,11 @@ _linloop:
     OR (HL)
     JP Z, _linend
 
-    PUSH DE
+    PUSH DE     ; masks
     ; e2 = err; if(e2 >-dx) { err -= dy; x0 += sx; }
     LD DE, (_linerr)    ; e2 = err
-    PUSH DE ; e2
-    LD HL, (_lindxneg)
-
-    ;AND A
-    ;SBC HL, DE
-    ;JP NC, _line21
+    PUSH DE     ; e2
+    LD HL, (_lindxneg)  ; -dx
 
     ; compare -dx < e2
     LD A,H
@@ -299,21 +299,21 @@ _lincmp14:
 _lincmp15:
 
     ; err -= dy
-    POP HL
+    POP HL      ; e2=err
     PUSH HL
     LD DE, (_lindy)
     AND A
     SBC HL, DE
     LD (_linerr), HL
     ; inc x coordinate = rotate masks, inc IO byte column
-    POP HL
-    POP DE
+    POP HL      ; e2
+    POP DE      ; masks
     RLC D
     RLC D
     RLC E
     RLC E
-    PUSH DE
-    ; check if next column
+    PUSH DE     ; masks
+    ; increment xpos and check if next column
     LD A, (_linxpos)
     INC A
     AND 03H
@@ -322,21 +322,16 @@ _lincmp15:
     ; next byte column
     INC B
 _line20:
-    ; dec _linxleft
-    PUSH HL
+    ; dec xleft
+    PUSH HL     ; e2
     LD HL, (_linxleft)
     DEC HL
     LD (_linxleft), HL
 
 _line21:
-    POP HL
+    POP HL      ; e2
     ; if(e2 < dy) { err += dx; y0 += sy; }
     LD DE,(_lindy)
-
-    ;EX DE,HL
-    ;AND A
-    ;SBC HL,DE   ; dy-e2
-    ;JP NC, _linnext
 
     ; compare e2 < dy
     LD A,H
@@ -479,7 +474,7 @@ SPRHPIX: EQU 16
 ; helper routine to calculate tile address
 ; if address in HL is 00-FFH, it is considered that this is tile number, and real address
 ;   is calculated as timtiles + L*64
-; if if address in HL is greated than 0100H, it is considered as memory address
+; if address in HL is greater than 00FFH, it is considered as memory address
 tileaddr:
     INC H
     DEC H
@@ -514,18 +509,22 @@ ortile:
     PUSH    AF
     CALL tileaddr
 
+    ; x*256
     LD B, C
+    ; add 80H to addr hi
     SLA B
     SCF
     RR B
+    ; y*4
     SLA E
     SLA E
     LD C, E
 
     LD D, SPRWBYT
+    ; OR two columns of 16 bytes to two adjacent rows of video memory
 ortile1:
     PUSH BC
-    LD E, SPRHPIX
+    LD E, SPRHPIX   ; 16 bytes
 
 ortile2:
     IN A,(C)
