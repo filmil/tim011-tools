@@ -49,6 +49,93 @@ Here are some examples of fonts done by Marko Šolajić:
 ![Example 1](./images/timfont1.jpg)
 ![Example 2](./images/timfont2.jpg)
 
+## TimFont8
+
+timfont8.py is a Python 2/3 script that can convert PNG of ZX Spectrum 8x8 font into TIM-011 font used with TIM's Small C print library.
+
+Be sure that program you use for editing PNG won't change its format: 1 byte per pixel, greyscale, no alpha channel, no layers or anything else.
+Photoshop users should use the "Flatten Layers" option before saving their PNG file.
+GIMP users should export the image as "8bpc GRAY".
+
+Only colors recognised as pixels are 40h, 80h and FFh which represent the colors 01b, 10b and 11b on TIM-011.
+All other colors will be treated as black (00b).
+
+For each PNG file a separate '.h' file with DB definitions of each tile will be created.
+That file can be directly imported into Small C programs.
+
+You can make PNG of any size, the program will go row by row of 8x8 characters and do the conversion.
+
+Example file 'zxchars.png' contains ZX Spectrum font.
+
+## TimPrint Small C 8x8 font library
+
+TimPrint is a character library that uses 8x8 characters for its output, to be used with [MESCC / Mike's Enhanced Small C Compiler](https://github.com/MiguelVis/mescc) by Miguel García.
+This gives resolution of 64x32 character positions. Fonts can be monochrome, but all 4 shades can be used in their definition.
+
+![ZX Spectrum font example](./images/timprint.jpg)
+
+One character is 16 bytes, and font can contain up to 256 of them.
+Character bytes are organized in two columns because TIM-011 video memory is organized by columns:
+```
+    00  08
+    01  09
+    02  0A
+    03  0B
+    04  0C
+    05  0D
+    06  0E
+    07  0F
+```
+Library consists of these routines:
+
+* prchrxy(x, y, chr)
+    * x = 0 .. 63, y = 0 .. 31, chr 0-255 
+    * puts character to screen and updates cursor position
+    * does not check for out-of-screen values!
+* prstr(str)
+    * prints null-terminated string at current cursor position
+    * will wrap to position (0,0) after (63,31)
+* cursorxy(x, y)
+    * x = 0 .. 63, y = 0 .. 31
+    * sets cursor position
+    * does not check for out-of-screen values!
+* prsetinv(xor)
+    * xor=0 - normal drawing,  xor=0xFF - inverted drawing
+    * sets XOR value for character drawing
+* prsetsub(sub)
+    * sub=0x20 - ASCII coding,  sub=0 - no coding
+    * sets the value to be substracted from character code before printing
+
+In standard mode, before printing, each character ASCII code is substracted by 0x20, and then font data is indexed with this value.
+This is useful for printing ASCII strings.
+
+That constant can be changed, for example to 0, and then font data can be used in indexed mode, and full 256 charactes can be used.
+Be aware that prstr function won't be able to use character at index 0 because that value is used as string terminator.
+
+Also, in standard mode characters are drawn non-inverted.
+If XOR constant is set to 0xFF, characters will be printed inverted.
+
+For the library to work, font file must be included right after including this library, for example:
+```
+    #include <timgraph.lib>
+    #include "zxchars.h"
+```
+Font data can be created using TimFont8.
+
+Examples of usage can be found in prexam.c, while zxchars.h has sprite definitions from zxchars.png.
+You can compile it by using CP/M emulator and Small C compiler:
+```
+./cpm cc prexam
+./cpm zsm prexam
+./cpm hextocom prexam
+./cpm
+```
+and then inside the emulator:
+```
+prexam
+bye
+```
+
 ## TimGraph Small C library
 
 TimGraph is a graphics library for TIM-011 to be used with [MESCC / Mike's Enhanced Small C Compiler](https://github.com/MiguelVis/mescc) by Miguel García.
@@ -58,14 +145,14 @@ Beacuse TIM-011 uses 2 bits per pixel, one tile is 64 bytes.
 
 Tile bytes are organized by columns because TIM-011 video memory is organized by columns:
 ```
-    00  08  10  18
-    01  09  11  19
-    02  0A  12  1A
-    03  0B  13  1B
-    04  0C  14  1C
-    05  0D  15  1D
-    06  0E  16  1E
-    07  0F  17  1F
+    00  10  20  30
+    01  11  21  31
+    02  12  22  32
+    ..  ..  ..  ..
+    ..  ..  ..  ..
+    0D  1D  2D  3D
+    0E  1E  2E  3E
+    0F  1F  2F  3F
 ```
 Byte 00 holds pixels (0,0)-(3,0) and so on.
 

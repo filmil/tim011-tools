@@ -1169,10 +1169,10 @@ void *xrefresh(void *param) {
 /*        // osvezavanje prikaza*/
         XRefresh();
 /*        // pauza u mikrosekunama*/
-        usleep(40000);
+        usleep(100000);
     }
 }
-/*********** TIM-011 BEGIN **********************/
+/*********** TIM-011 END **********************/
 
 
 int
