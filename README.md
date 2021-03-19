@@ -69,10 +69,11 @@ Example file 'zxchars.png' contains ZX Spectrum font.
 
 ## TimPrint Small C 8x8 font library
 
+![ZX Spectrum font example](./images/timprint.png)
+
 TimPrint is a character library that uses 8x8 characters for its output, to be used with [MESCC / Mike's Enhanced Small C Compiler](https://github.com/MiguelVis/mescc) by Miguel García.
 This gives resolution of 64x32 character positions. Fonts can be monochrome, but all 4 shades can be used in their definition.
 
-![ZX Spectrum font example](./images/timprint.jpg)
 
 One character is 16 bytes, and font can contain up to 256 of them.
 Character bytes are organized in two columns because TIM-011 video memory is organized by columns:
@@ -137,6 +138,8 @@ bye
 ```
 
 ## TimGraph Small C library
+
+![Tiles example](./images/timsprites.png) ![Lines example](./images/timline.png)
 
 TimGraph is a graphics library for TIM-011 to be used with [MESCC / Mike's Enhanced Small C Compiler](https://github.com/MiguelVis/mescc) by Miguel García.
 
