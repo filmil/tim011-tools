@@ -100,7 +100,7 @@ Library consists of these routines:
     * sets cursor position
     * does not check for out-of-screen values!
 * prsetinv(xor)
-    * xor=0 - normal drawing,  xor=0xFF - inverted drawing
+    * xor=0x800 - normal drawing,  xor=0x8FF - inverted drawing (high part must be 8!)
     * sets XOR value for character drawing
 * prsetsub(sub)
     * sub=0x20 - ASCII coding,  sub=0 - no coding
@@ -113,7 +113,7 @@ That constant can be changed, for example to 0, and then font data can be used i
 Be aware that prstr function won't be able to use character at index 0 because that value is used as string terminator.
 
 Also, in standard mode characters are drawn non-inverted.
-If XOR constant is set to 0xFF, characters will be printed inverted.
+If XOR constant is set to 0x8FF, characters will be printed inverted.
 
 For the library to work, font file must be included right after including this library, for example:
 ```

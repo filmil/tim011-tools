@@ -16,9 +16,9 @@ int main() {
         prstr(str2);
         prstr(str3);
         if (i&1)
-            prsetinv(0xFF);
+            prsetinv(0x8FF);
         else
-            prsetinv(0x00);
+            prsetinv(0x800);
     }
 }
 
