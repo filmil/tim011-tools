@@ -1,0 +1,13 @@
+sh_binary(
+  name = "dummy",
+  srcs = ["dummy.sh"],
+  testonly = 1,
+  data = [
+    "@mescc//:cc.com",
+    "//CPMEmulator:cpm",
+  ],
+  # To detect the runfiles dir.
+  deps = [
+    "@bazel_tools//tools/bash/runfiles",
+    ],
+)

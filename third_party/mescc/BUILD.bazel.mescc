@@ -1,0 +1,9 @@
+exports_files(
+  [
+    "cc.com", 
+    "CCOPT.COM",
+    "HEXTOCOM.COM",
+    "ZSM.COM",
+    "small_c_17/CONIO2.LIB",
+  ]
+)

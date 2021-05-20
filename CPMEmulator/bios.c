@@ -16,7 +16,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
-#include "cpmdisc.h"
+#include "CPMEmulator/cpmdisc.h"
 #include "defs.h"
 
 #ifdef macintosh
@@ -26,7 +26,7 @@
 #endif
 
 /* definition of: extern unsigned char	cpm_array[]; */
-#include "cpm.c"
+#include "CPMEmulator/cpm.h"
 
 /* The BDOS/CCP had better be built with these values! */
 #define CCP		0xD400 /* (BIOS - 0x1600) */
@@ -124,7 +124,7 @@ warmboot(z80info *z80)
 	}
 
 	/* load CCP and BDOS into memory (max 0x1600 in size) */
-	for (i = 0; i < 0x1600 && i < sizeof cpm_array; i++)
+	for (i = 0; i < 0x1600 && i < cpm_array_size; i++)
 		SETMEM(CCP + i, cpm_array[i]);
 
 	/* try to load CCP/BDOS from disk, but ignore any errors */
