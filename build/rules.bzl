@@ -67,4 +67,3 @@ mescc_toolchain = rule(
         ),
     },
 )
-
