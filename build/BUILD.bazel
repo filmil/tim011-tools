@@ -1,4 +1,4 @@
-load("//build:rules.bzl", "bar_toolchain", "bar_binary")
+load("//build:rules.bzl", "bar_toolchain", "mescc_toolchain")
 
 toolchain_type(name = "toolchain_type")
 
@@ -26,7 +26,41 @@ toolchain(
     toolchain_type = ":toolchain_type",
 )
 
-bar_binary(
-  name = "test_bar_binary",
-  srcs = ["test.f"],
+toolchain_type(name = "toolchain_type_mescc")
+
+mescc_toolchain(
+    name = "mescc_linux",
+    compiler = "//build:mescc_compiler",
+)
+
+toolchain(
+    name = "mescc_linux_toolchain",
+    exec_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":mescc_linux",
+    toolchain_type = ":toolchain_type_mescc",
+)
+
+sh_binary(
+  name = "mescc_compiler",
+  srcs = ["mescc.sh"],
+  data = [
+    "@mescc//:cc.com",
+    "@mescc//:HEXTOCOM.COM",
+    "@mescc//:ZSM.COM",
+    "@mescc//:small_c_17/CONIO2.LIB",
+    "//CPMEmulator:cpm",
+    # Flags processing
+    "@gotopt2//cmd/gotopt2:gotopt2",
+  ],
+  deps = [
+    # To detect the runfiles dir.
+    "@bazel_tools//tools/bash/runfiles",
+    ],
 )

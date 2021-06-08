@@ -28,6 +28,25 @@ else
 fi
 # --- end runfiles.bash initialization ---
 
+readonly _gotopt_binary="$(rlocation \
+  gotopt2/cmd/gotopt2/linux_amd64_stripped/gotopt2)"
+
+GOTOPT2_OUTPUT=$($_gotopt_binary "${@}" <<EOF
+flags:
+- name: "container"
+  type: string
+  help: "The name of the container to run"
+EOF
+)
+if [[ "$?" == "11" ]]; then
+  # When --help option is used, gotopt2 exits with code 11.
+  exit 1
+fi
+
+# Evaluate the output of the call to gotopt2, shell vars assignment is here.
+eval "${GOTOPT2_OUTPUT}"
+
+# ---
 readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
 #trap "rm -fr ${_tmpdir}" EXIT
 

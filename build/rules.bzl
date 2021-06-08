@@ -1,3 +1,42 @@
+MesccInfo = provider(
+    doc = "Information on how to invoke the mscc compiler for CP/M",
+    fields = [
+       "compiler",
+    ],
+)
+
+def _mescc_binary_impl(ctx):
+    info = ctx.toolchains["//build:toolchain_type_mescc"].mesccinfo
+    compiler = info.compiler
+    print("compiler: {}".format(compiler))
+    print("info: {}".format(info))
+    pass
+
+mescc_binary = rule(
+    implementation = _mescc_binary_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+    },
+    toolchains = ["//build:toolchain_type_mescc"],
+)
+
+def _mescc_toolchain_impl(ctx):
+    toolchain_info = platform_common.ToolchainInfo(
+        mesccinfo = MesccInfo(
+            compiler = ctx.attr.compiler,
+        ),
+    )
+    return [toolchain_info]
+
+mescc_toolchain = rule(
+    implementation = _mescc_toolchain_impl,
+    attrs = {
+        "compiler": attr.label(),
+    },
+)
+
+#----
+
 BarcInfo = provider(
     doc = "Information about how to invoke the barc compiler.",
     # In the real world, compiler_path and system_lib might hold File objects,

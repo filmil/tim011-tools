@@ -1,0 +1,8 @@
+load("//build:rules.bzl", "mescc_binary")
+
+mescc_binary(
+    name = "prexam",
+    srcs = [
+        "prexam.c",
+    ],
+)
