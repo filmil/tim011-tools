@@ -73,9 +73,9 @@ basename="${fname%.*}"
   cd "${_tmpdir}"
 
   # xvfb-run needs to be installed since X is not accessible from the sandbox.
-  xvfb-run -n 10 -e /dev/stdout ./cpm cc ${gotopt2_source_file}
-  xvfb-run -n 11 -e /dev/stdout ./cpm zsm ${basename}
-  xvfb-run -n 12 -e /dev/stdout ./cpm hextocom ${basename}
+  xvfb-run -a -e /dev/stdout ./cpm cc ${gotopt2_source_file}
+  xvfb-run -a -e /dev/stdout ./cpm zsm ${basename}
+  xvfb-run -a -e /dev/stdout ./cpm hextocom ${basename}
 )
 
 # end...
