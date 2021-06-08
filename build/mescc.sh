@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # This magic was copied from runfiles by consulting:
 #   https://stackoverflow.com/questions/53472993/how-do-i-make-a-bazel-sh-binary-target-depend-on-other-binary-targets
 
@@ -16,16 +18,20 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
   { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
 # --- end runfiles.bash initialization v2 ---
 
-readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
-readonly _gotopt_binary="$(rlocation \
-  gotopt2/cmd/gotopt2/linux_amd64_stripped/gotopt2)"
+_gotopt_binary="$(rlocation \
+  gotopt2/cmd/gotopt2/linux_amd64_stripped/gotopt2)" || true
+if [[ "${_gotopt_binary}" == "" ]]; then
+  _gotopt_binary="$(rlocation \
+    gotopt2/cmd/gotopt2/gotopt2_/gotopt2)"
+fi
 
 GOTOPT2_OUTPUT=$($_gotopt_binary "${@}" <<EOF
 flags:
-- name: "container"
+- name: "source-file"
   type: string
-  help: "The name of the container to run"
+  help: "The name of the source file to compile"
+- name: "source-path"
+  type: string
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -38,16 +44,18 @@ eval "${GOTOPT2_OUTPUT}"
 
 # ---
 readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
-trap "rm -fr ${_tmpdir}" EXIT
+#trap "rm -fr ${_tmpdir}" EXIT
 
 readonly _mescc="$(rlocation mescc/cc.com)"
-echo "mescc: ${_mescc}"
 readonly _mescc_srcdir="${_script_dir}/mescc_compiler.runfiles/mescc"
 readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
 
 cp --dereference -R ${_mescc_srcdir}/* ${_tmpdir}
 cp "${_emulator}" "${_tmpdir}/cpm"
-
-echo "tmpdir: ${_tmpdir}"
+mv ${_tmpdir}/small_c_17/* ${_tmpdir}
+cp "${gotopt2_source_path}" "${_tmpdir}"/"${gotopt2_source_file}"
 cd "${_tmpdir}"
-./cpm cc
+
+# xvfb-run needs to be installed since X is not accessible from the sandbox.
+xvfb-run \
+  ./cpm cc ${gotopt2_source_file}

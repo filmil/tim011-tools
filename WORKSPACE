@@ -1,7 +1,6 @@
 workspace(name = "tim011_tools")
 
 register_toolchains(
-    "//build:barc_linux_toolchain",
     "//build:mescc_linux_toolchain",
 )
 
