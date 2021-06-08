@@ -7,10 +7,19 @@ MesccInfo = provider(
 
 def _mescc_binary_impl(ctx):
     info = ctx.toolchains["//build:toolchain_type_mescc"].mesccinfo
-    compiler = info.compiler
+    out_name = "{}.com".format(ctx.label.name)
+    out_file = ctx.actions.declare_file(out_name)
+    compiler = info.compiler.files.to_list()[1]
     print("compiler: {}".format(compiler))
-    print("info: {}".format(info))
-    pass
+    print("ctx: {}".format(ctx))
+    print("out_file: {}".format(out_file))
+    ctx.actions.run(
+      outputs = [out_file],
+      executable = compiler,
+    )
+    return [
+        DefaultInfo(files=depset([out_file])),
+    ]
 
 mescc_binary = rule(
     implementation = _mescc_binary_impl,
@@ -31,7 +40,8 @@ def _mescc_toolchain_impl(ctx):
 mescc_toolchain = rule(
     implementation = _mescc_toolchain_impl,
     attrs = {
-        "compiler": attr.label(),
+        "compiler": attr.label(
+        ),
     },
 )
 

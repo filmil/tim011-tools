@@ -54,7 +54,9 @@ sh_binary(
     "@mescc//:cc.com",
     "@mescc//:HEXTOCOM.COM",
     "@mescc//:ZSM.COM",
-    "@mescc//:small_c_17/CONIO2.LIB",
+    "@mescc//:libs",
+    "@mescc//:includes",
+    "@mescc//:cpm_binaries",
     "//CPMEmulator:cpm",
     # Flags processing
     "@gotopt2//cmd/gotopt2:gotopt2",
@@ -62,5 +64,5 @@ sh_binary(
   deps = [
     # To detect the runfiles dir.
     "@bazel_tools//tools/bash/runfiles",
-    ],
+  ],
 )

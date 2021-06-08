@@ -5,28 +5,18 @@ set -eo pipefail
 # This magic was copied from runfiles by consulting:
 #   https://stackoverflow.com/questions/53472993/how-do-i-make-a-bazel-sh-binary-target-depend-on-other-binary-targets
 
-# --- begin runfiles.bash initialization ---
-# Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
-set -eo pipefail
-if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
-  if [[ -f "$0.runfiles_manifest" ]]; then
-    export RUNFILES_MANIFEST_FILE="$0.runfiles_manifest"
-  elif [[ -f "$0.runfiles/MANIFEST" ]]; then
-    export RUNFILES_MANIFEST_FILE="$0.runfiles/MANIFEST"
-  elif [[ -f "$0.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
-    export RUNFILES_DIR="$0.runfiles"
-  fi
-fi
-if [[ -f "${RUNFILES_DIR:-/dev/null}/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
-  source "${RUNFILES_DIR}/bazel_tools/tools/bash/runfiles/runfiles.bash"
-elif [[ -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
-  source "$(grep -m1 "^bazel_tools/tools/bash/runfiles/runfiles.bash " \
-            "$RUNFILES_MANIFEST_FILE" | cut -d ' ' -f 2-)"
-else
-  echo >&2 "ERROR: cannot find @bazel_tools//tools/bash/runfiles:runfiles.bash"
-  exit 1
-fi
-# --- end runfiles.bash initialization ---
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+
+readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 readonly _gotopt_binary="$(rlocation \
   gotopt2/cmd/gotopt2/linux_amd64_stripped/gotopt2)"
@@ -48,14 +38,16 @@ eval "${GOTOPT2_OUTPUT}"
 
 # ---
 readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
-#trap "rm -fr ${_tmpdir}" EXIT
+trap "rm -fr ${_tmpdir}" EXIT
 
 readonly _mescc="$(rlocation mescc/cc.com)"
+echo "mescc: ${_mescc}"
+readonly _mescc_srcdir="${_script_dir}/mescc_compiler.runfiles/mescc"
 readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
 
-ln -s "${_mescc}" "${_tmpdir}/_cc.com"
+cp --dereference -R ${_mescc_srcdir}/* ${_tmpdir}
 cp "${_emulator}" "${_tmpdir}/cpm"
 
 echo "tmpdir: ${_tmpdir}"
 cd "${_tmpdir}"
-./cpm _cc
+./cpm cc

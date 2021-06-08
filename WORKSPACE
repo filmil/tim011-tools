@@ -41,6 +41,7 @@ new_git_repository(
   remote = "https://github.com/MiguelVis/mescc",
   commit = "762ac3ba1c020352223831bc9faf26d57ecb5b8a",
   build_file = "//third_party/mescc:BUILD.bazel.mescc",
+  shallow_since = "1610562846 +0100",
 )
 
 git_repository(

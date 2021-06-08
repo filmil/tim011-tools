@@ -1,9 +1,36 @@
-exports_files(
-  [
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+  name = "includes",
+  srcs = [
+    "mescc.h",
+    "alloc.h",
+    "atexit.h",
+    "bsearch.h",
+    "ctype.h",
+    "fileio.h",
+    "fprintf.h",
+    "conio.h",
+    "clock.h",
+  ],
+)
+
+filegroup(
+  name = "libs",
+  srcs = [
+    "small_c_17/CONIO2.LIB",
+  ],
+)
+
+filegroup(
+  name = "cpm_binaries",
+  srcs = [
     "cc.com", 
     "CCOPT.COM",
     "HEXTOCOM.COM",
     "ZSM.COM",
-    "small_c_17/CONIO2.LIB",
-  ]
+  ],
 )
+
+
+
