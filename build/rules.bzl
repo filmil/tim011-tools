@@ -15,15 +15,24 @@ def _mescc_binary_impl(ctx):
          tools = [info.compiler])
     source = ctx.attr.srcs[0].files.to_list()[0]
     print("source: {}".format(source.basename))
-    print("deps: {}".format(ctx.attr.deps))
+    deps = []
+    include_files = []
+    for target in ctx.attr.deps:
+        for file in target.files.to_list():
+            deps += [file]
+            include_files += [file.path]
+    print("deps: {}".format(deps))
+    print("include_files: {}".format(include_files))
     ctx.actions.run(
       outputs = [out_file],
-      inputs = runfiles_inputs + [source],
+      inputs = runfiles_inputs + [source] + deps,
       executable = compiler,
       input_manifests = input_manifests,
       arguments = [
         "--source-file={}".format(source.basename),
         "--source-path={}".format(source.path),
+        "--include-files={}".format(",".join(include_files)),
+        "--out-file={}".format(out_file.path),
       ],
     )
     return [

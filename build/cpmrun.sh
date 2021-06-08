@@ -32,12 +32,6 @@ flags:
   help: "The name of the source file to compile"
 - name: "source-path"
   type: string
-- name: "include-files"
-  type: stringlist
-  help: "the list of pairs of full paths and short names of files"
-- name: "out-file"
-  type: string
-  help: "the name of the output file"
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -52,31 +46,14 @@ eval "${GOTOPT2_OUTPUT}"
 readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
 trap "rm -fr ${_tmpdir}" EXIT
 
-readonly _mescc="$(rlocation mescc/cc.com)"
-readonly _mescc_srcdir="${_script_dir}/mescc_compiler.runfiles/mescc"
 readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
 
-cp --dereference -R ${_mescc_srcdir}/* ${_tmpdir}
 cp "${_emulator}" "${_tmpdir}/cpm"
-mv ${_tmpdir}/small_c_17/* ${_tmpdir}
 cp "${gotopt2_source_path}" "${_tmpdir}"/"${gotopt2_source_file}"
-
-for f in ${gotopt2_include_files__list[@]}; do
-  bf="${f##*/}"
-  cp ${f} "${_tmpdir}/${bf}"
-done
-
-fname="$(basename ${gotopt2_source_file})"
-basename="${fname%.*}"
 
 (
   cd "${_tmpdir}"
 
-  # xvfb-run needs to be installed since X is not accessible from the sandbox.
-  xvfb-run -n 10 -e /dev/stdout ./cpm cc ${gotopt2_source_file}
-  xvfb-run -n 11 -e /dev/stdout ./cpm zsm ${basename}
-  xvfb-run -n 12 -e /dev/stdout ./cpm hextocom ${basename}
+  ./cpm ${gotopt2_source_file}
 )
 
-# end...
-cp "${_tmpdir}/${basename}.com" ${gotopt2_out_file}

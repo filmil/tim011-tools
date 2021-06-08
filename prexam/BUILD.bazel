@@ -6,6 +6,7 @@ mescc_binary(
         "prexam.c",
     ],
     deps = [
-        "//lib/tim:timprint"
+        "//lib/tim:timprint",
+        "//lib/zxchars",
     ],
 )

@@ -1,6 +1,11 @@
-exports_files([
-  "zxchars.h",
-  "zxchars.png",
-])
+package(default_visibility=["//visibility:public"])
+
+filegroup(
+    name = "zxchars",
+    srcs = [
+        "zxchars.h",
+        "zxchars.png",
+    ],
+)
 
 
