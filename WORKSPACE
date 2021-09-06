@@ -26,6 +26,16 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "sdcc-linux",
+    sha256 = "457bd88adefca41798b9415f7656b3bdd9cddb6962bc16193497c4b95546abc0",
+    type = "tar.bz2",
+    urls = [
+        "http://sourceforge.net/projects/sdcc/files/snapshot_builds/amd64-unknown-linux2.5/sdcc-snapshot-amd64-unknown-linux2.5-20210827-12654.tar.bz2/download",
+    ],
+    build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
+)
+
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 

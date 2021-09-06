@@ -1,0 +1,9 @@
+# This rule just shows how you can invoke a binary from an external
+# repo.
+genrule(
+  name = "foo",
+  cmd = "$(location @sdcc-linux//:sdcc/bin/sdcc)",
+  srcs = [],
+  outs = ["somefile"],
+  tools = [ "@sdcc-linux//:sdcc/bin/sdcc",]
+)
