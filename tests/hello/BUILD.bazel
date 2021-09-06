@@ -1,0 +1,6 @@
+load("//build:sdcc.bzl", "sdcc_z180_c_binary")
+
+sdcc_z180_c_binary(
+  name = "hello",
+  srcs = ["hello.c"],
+)

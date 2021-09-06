@@ -1,6 +1,7 @@
 // filmil@gmail.com: Sep 6, 2021.
 // Ported to gcc: removed mescc-specific headers.
 // Added support for non-sequential ihx lines.
+// Removed the insistence on specifying a filename without extension.
 //
 /*	hextocom.c
 
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
 
 	/* Show usage? */
 
-	if(argc != 2)
+	if(argc != 3)
 	{
 		printf("Usage: %s\n", APP_USAGE);
 		exit(0);
@@ -179,14 +180,8 @@ int main(int argc, char** argv)
 
 	/* Filenames */
 
-	if(strchr(argv[1], '.') != NULL)
-		error("Bad filename (no type, please)");
-
-	if(strlen(argv[1]) > 10) /* D:FILENAME */
-		error("Bad filename (too long)");
-
-	strcat(strcpy(fn_hex, argv[1]), ".HEX");
-	strcat(strcpy(fn_com, argv[1]), ".COM");
+	strcpy(fn_hex, argv[1]);
+	strcpy(fn_com, argv[2]);
 
 	/* Open files */
 
