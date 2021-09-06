@@ -1,0 +1,4 @@
+cc_binary(
+  name = "hextocom",
+  srcs = ["hextocom.c"],
+)
