@@ -3,6 +3,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
   name = "binaries",
   srcs = [
+    "sdcc/bin/sdar",
     "sdcc/bin/sdasz80",
     "sdcc/bin/sdcc",
     "sdcc/bin/sdcpp",

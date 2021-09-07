@@ -7,6 +7,7 @@ SdccInfo = provider(
     "deps",
     "hextocom",
     "includes",
+    "librarian",
     "libs",
     "linker",
     "preprocessor",
@@ -18,9 +19,11 @@ SdccHeaders = provider(
     fields = ["headers", "rels"],
 )
 
+
 # Declare all the interesting files that sdcc produces.
 def declare_sdcc_extensions(declare_file_action, label_name, extensions):
     return [declare_file_action("{}.{}".format(label_name, extension)) for extension in extensions]
+
 
 def resolve_command(ctx, info):
     runfiles_inputs, _, input_manifests = ctx.resolve_command(
@@ -30,14 +33,21 @@ def resolve_command(ctx, info):
             info.hextocom,
             info.assembler,
             info.linker,
+            info.librarian,
        ])
     return (runfiles_inputs, input_manifests)
+
 
 def get_compiler(info):
     return info.compiler.files.to_list()[0]
 
+
 def get_assembler(info):
     return info.assembler.files.to_list()[0]
+
+
+def get_librarian(info):
+    return info.librarian.files.to_list()[0]
 
 
 def get_lib_args(libs):
@@ -101,6 +111,7 @@ def get_source_files(ctx):
         source_files += files
     return source_files
 
+
 def _sdcc_z180_c_library_impl(ctx):
     info = get_sdcc_info(ctx)
     compiler = get_compiler(info)
@@ -133,7 +144,6 @@ def _sdcc_z180_c_library_impl(ctx):
             "-o",
             single_rel_file.path,
             source_file.path]
-        print("SINGLE: all_args: {}".format(all_args))
         ctx.actions.run(
             outputs = [single_rel_file] + declare_sdcc_extensions(
                 ctx.actions.declare_file, source_file.basename,
@@ -145,9 +155,22 @@ def _sdcc_z180_c_library_impl(ctx):
             arguments = all_args
         )
 
+    # Create a library.
+    lib_file = ctx.actions.declare_file("{}.lib".format(ctx.label.name))
+    ctx.actions.run(
+        outputs = [lib_file],
+        inputs = all_rel_files,
+        executable = get_librarian(info),
+        input_manifests = input_manifests,
+        arguments = [
+            "-rc",
+            lib_file.path,
+        ] + [rel_file.path for rel_file in all_rel_files],
+    )
+
     return [
-        DefaultInfo(files=depset(all_rel_files)),
-        SdccHeaders(headers=depset(declared_headers), rels=depset(all_rel_files))
+        DefaultInfo(files=depset(all_rel_files + [lib_file])),
+        SdccHeaders(headers=depset(declared_headers), rels=depset([lib_file]))
     ]
 
 sdcc_z180_c_library = rule(
@@ -179,7 +202,6 @@ def _sdcc_z180_c_binary_impl(ctx):
     dep_headers, dep_rel_files = dep_and_rel(ctx.attr.deps)
 
     crt0 = ctx.attr._crt0.files.to_list()[0]
-    print("crt0: {}".format(crt0))
 
     # continue building
     source_files = [crt0]
@@ -195,7 +217,6 @@ def _sdcc_z180_c_binary_impl(ctx):
           "-o",
           out_name,
     ] + sources
-    print("all_args_bin: {}".format(all_args))
     ctx.actions.run(
         outputs = [ihx_file] + declare_sdcc_extensions(
             ctx.actions.declare_file, ctx.label.name, ["rel", "sym", "asm", "lst", "map"]),
@@ -247,7 +268,6 @@ def _sdcc_z180_asm_library_impl(ctx):
             single_rel_file.path,
             source_file.path,
         ]
-        print("ASM: all_args: {}".format(all_args))
         ctx.actions.run(
             outputs = [single_rel_file] + declare_sdcc_extensions(
                 ctx.actions.declare_file, source_file.basename,
@@ -256,7 +276,6 @@ def _sdcc_z180_asm_library_impl(ctx):
             executable = get_assembler(info),
             arguments = all_args,
         )
-    print("all_rel_files: {}".format(all_rel_files))
     return [
         DefaultInfo(files=depset(all_rel_files)),
         SdccHeaders(headers=depset([]), rels=depset(all_rel_files))
@@ -280,6 +299,7 @@ def _sdcc_z180_toolchain_impl(ctx):
             hextocom = ctx.attr.hextocom,
             libs = ctx.attr.libs,
             includes = ctx.attr.includes,
+            librarian = ctx.attr.librarian,
         )
     )
     return [toolchain_info]
@@ -298,6 +318,11 @@ sdcc_z180_toolchain = rule(
       executable = True,
     ),
     "assembler": attr.label(
+      allow_files = True,
+      cfg = "host",
+      executable = True,
+    ),
+    "librarian": attr.label(
       allow_files = True,
       cfg = "host",
       executable = True,

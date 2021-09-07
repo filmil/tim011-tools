@@ -111,6 +111,7 @@ emulator works.
    global initialization routines, which will likely need to be added.  While
    SDCC has most of the C standard library available for linking, it does not
    provide system-specific low level routines, which will need to be added too.
+1. zzarko's work has not been ported from MESCC to SDCC.
 
 ----
 Original README.md follows.
