@@ -1,6 +1,119 @@
-This is a fork of https://bitbucket.org/zzarko/tim011-tools/, the original README
-is below.
+_This is a fork of https://bitbucket.org/zzarko/tim011-tools/, the original README
+is way down below._
 
+I was very impressed by zzarko's work on TIM-011 tools, not only because it's a
+very impressive piece of work for a machine that I have fond memories of, but
+also because TIM-011 is very near and dear to my heart, and over time I got
+practically convinced that it had slipped into oblivion over the decades.
+
+So when I saw that not only it's not forgotten, but that someone's actively
+working on it, I wanted to contribute.  However, I'm lazy and found the lack of
+automation off-putting, so I set off to fix this.
+
+* I wanted to have a self-contained environment for TIM-011 tools.  This means
+  automated download of all dependencies and such.  So I used `bazel` to take
+  care of those dependencies, and took the trouble to make build rules for
+  MESCC and SDCC to build and run the programs originally developed by
+  zzarko@bitbucket.org.
+* I wanted to use a standard C cross-compiler, instead of the custom C compiler
+  that requires a Z80 emulator. So I added support for [SDCC][sdcc].
+* I added automated building of the CP/M emulator, which will hopefully be
+  useful for easy and scripted startup of the emulated code.
+* Since the assembly syntax used by MESCC is not the same as that of SDCC, and
+  since zzarko already wrote quite a bit of code using it, I also provided a
+  MESCC toolchain.
+* I left it to `bazel` to download and build all of the above tools.  This is
+  ideal for those of you who are as lazy as I am: `bazel` takes over all the
+  tedium of downloading the tools and making them ready for you. They are
+  *not* installed on your system but are instead vendored as external
+  dependencies, which means that they do not pollute your machine with random
+  compiler tools.  This also means you can hack on the code for a while, then
+  delete your working repository (or reinstall your machine, or change
+  workspaces etc) and you can come back to an environment that still works.
+  It's kind of nice.
+
+To work with this repo, you will need to install one tool: [`bazel`][baz]. See
+the install instructions from
+https://docs.bazel.build/versions/main/install.html  Once you install `bazel`
+and have it in your path, you can do a few things.  It's not much for the time
+being, but it is a beginning.
+
+From the top level directory:
+
+```
+bazel build //tests/hello
+```
+
+This command will build a `.com` program (a CP/M executable) which consists of
+several source files, links a custom CP/M `crt0.s` (C runtime library) and is
+compiled by [SDCC][sdcc] for the HD64180 processor.  You don't need to download
+SDCC or any other tools: `bazel` will do that for you automatically.
+
+[baz]: https://bazel.io
+[sdcc]: http://sdcc.sourceforge.net
+
+## MESCC
+
+The original `tim011-tools` uses the MESCC compiler, which is cool, but has
+some limitations:
+
+1. It is not standard C.  It's a dedicated compiler for Z80 devices which makes
+   your C programs look and feel nonstandard.  It has nonstandard requirements.
+1. Its toolchain runs under the CP/M emulator.  This makes for a development
+   environment that is very limited compared to what you have on your PC.
+
+[mescc]: https://github.com/MiguelVis/mescc
+
+I added some limited MESCC support.  You can try it out by running the following
+in the project's top-level directory:
+
+```
+bazel build //prexam
+```
+
+You don't need to build or download anything: `bazel` will automatically download
+and build MESCC for you.  After you run the above command, you will get a `.com`
+file which you can submit for runnign under the TIM011 emulator.
+
+You can build the emulator like so:
+
+```
+bazel build //CPMEmulator:cpm
+```
+
+Once you have both the `prexam.com` and the CP/M emulator, you can run `prexam`
+like this, provided that you started from the project's top-level directory.
+
+```
+cd bazel-bin/prexam
+../CPMEmulator/cpm prexam
+```
+
+This should show you the "trla baba lan" TIM-011 screen, proving that the
+emulator works.
+
+## Limitations
+
+1. The toolchains work only under Linux.  Feel free to add support for other
+   host OSes; I simply don't have anything but Linux to work on.
+1. There isn't an easy way to run a program in an emulator just yet.  Once there is one,
+   you will be able to do `bazel run //tests/hello_sim` or some such, and bazel
+   will automatically compile your files, make an executable and run it under the
+   TIM-011 emulator.
+1. `bazel`, for all of its niceties, is still hard to use for those who don't
+   buy into its philosophy.  Sorry about that - I like `bazel` since I've used it
+   for work for the better part of the decade, and also wanted a pilot project
+   that is simple enough for me to learn its internals.  The upshot here is that
+   all the toolchain work is a one-time event: once the toolchain is ready, it
+   is very simple to [build executable programs](tests/hello/BUILD.bazel).
+1. The CP/M development environment built here is still not complete.  I have not
+   verified that the generated `.com` files are usable.  The `crt0.s` is missing
+   global initialization routines, which will likely need to be added.  While
+   SDCC has most of the C standard library available for linking, it does not
+   provide system-specific low level routines, which will need to be added too.
+
+----
+Original README.md follows.
 ----
 # tim011-tools
 
