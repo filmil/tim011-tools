@@ -1,0 +1,10 @@
+load("//build:sdcc.bzl", "sdcc_z180_asm_library")
+
+package(default_visibility = ["//visibility:public"])
+
+sdcc_z180_asm_library(
+    name = "cpm",
+    srcs = [
+        "crt0.s",
+    ],
+)

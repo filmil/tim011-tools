@@ -4,5 +4,6 @@ package(default_visibility = ["//visibility:public"])
 
 sdcc_z180_c_library(
   name = "putchar",
-  srcs = ["putchar.c", "putchar.h"],
+  srcs = ["putchar.c", "getchar.c",],
+  hdrs = ["putchar.h",],
 )

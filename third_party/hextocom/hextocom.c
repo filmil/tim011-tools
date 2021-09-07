@@ -167,8 +167,8 @@ int main(int argc, char** argv)
 {
 	/* Program name, copyright, etc. */
 
-	printf("%s %s\n\n", APP_NAME, APP_VERSION);
-	printf("%s\n\n", APP_COPYRGT);
+	fprintf(stderr, "%s %s\n\n", APP_NAME, APP_VERSION);
+	fprintf(stderr, "%s\n\n", APP_COPYRGT);
 
 	/* Show usage? */
 
@@ -219,6 +219,7 @@ int main(int argc, char** argv)
 					break;
 				}
 
+                /* Should not be needed since we already know we have 0x100.
 				if(!flag_adr)
 				{
 					if((first_adr=adr=ladr) != 0x0100)
@@ -226,6 +227,7 @@ int main(int argc, char** argv)
 
 					++flag_adr;
 				}
+                */
 				else if(adr<ladr)
 				{
 					if (adr < madr) {
