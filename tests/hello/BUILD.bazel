@@ -1,9 +1,15 @@
-load("//build:sdcc.bzl", "sdcc_z180_c_binary")
+load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library")
 
 sdcc_z180_c_binary(
   name = "hello",
   srcs = ["hello.c"],
   deps = [
     "//tests/hello/putchar",
+    ":dot",
   ]
+)
+
+sdcc_z180_asm_library(
+  name = "dot",
+  srcs = ["dot.s"],
 )

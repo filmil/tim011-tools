@@ -200,7 +200,6 @@ int main(int argc, char** argv)
 
 	while(run)
 	{
-        fprintf(stderr, "still running:\n ");
 		if(fgetc(fpi) != ':')
 			errorln("Missing colon");
 

@@ -19,6 +19,14 @@ SdccHeaders = provider(
     fields = ["headers", "rels"],
 )
 
+_SDCC_OPTIONS = [
+  "-mz180",
+  # 16-bit I/O space of the HD64180
+  "--codeseg", "CODE",
+  "--dataseg", "CODE",
+  "--constseg", "CODE",
+]
+
 
 # Declare all the interesting files that sdcc produces.
 def declare_sdcc_extensions(declare_file_action, label_name, extensions):
@@ -139,7 +147,7 @@ def _sdcc_z180_c_library_impl(ctx):
         # Compile each file to a .rel individually.
         single_rel_file = ctx.actions.declare_file("{}.rel".format(source_file.basename))
         all_rel_files += [single_rel_file]
-        all_args = ["-mz180"] + lib_args + incl_args + [
+        all_args = _SDCC_OPTIONS + lib_args + incl_args + [
             "-c",
             "-o",
             single_rel_file.path,
@@ -210,11 +218,8 @@ def _sdcc_z180_c_binary_impl(ctx):
         source_files += files
     source_files += dep_rel_files
     sources = [file.path for file in source_files]
-    all_args = [
+    all_args = _SDCC_OPTIONS + [
           "--no-std-crt0",
-          # Hm, how to put data to follow code?
-          "--dataseg", "CODE",
-          "-mz180",
     ] + lib_args + incl_args + [
           "-o",
           out_name,

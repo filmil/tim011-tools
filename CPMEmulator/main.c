@@ -913,7 +913,7 @@ output(z80info *z80, byte haddr, byte laddr, byte data)
         ioaddr = (((int)haddr) << 8) + laddr;
         
         screen[ioaddr-0x8000] = data;
-/*        printf("OUT %04X:%02X\n", ioaddr, data);*/
+        printf("OUT %04X:%02X\n", ioaddr, data);
         usleep(scriodelay);
         return;
     }

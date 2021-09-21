@@ -13,7 +13,7 @@
 	.org 0x100
 _init:
 	;; Stack at the top of memory.
-	ld	sp,#0xffff
+	ld	sp,#_stack
 
     ;; Initialise global variables
     call	gsinit
@@ -43,7 +43,10 @@ _exit::
 	;; to come back.
 	ret
 
-    .area   _GSINIT
-gsinit::
-    .area   _GSFINAL
-    ret
+gsinit:
+    ;; TODO
+	ret
+
+;; 1K stack goes here.
+	.ds 1024
+_stack:
