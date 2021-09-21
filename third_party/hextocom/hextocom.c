@@ -156,6 +156,7 @@ BYTE gethex()
 */
 void putbyte(BYTE byte)
 {
+	fprintf(stderr, "put byte : 0x%02x at adr: 0x%04x; madr:0x%04x; ladr:0x%04x\n", byte, adr, madr, ladr);
 	if(fputc(byte, fpo)==EOF)
 		error("Writing COM file");
 }
@@ -196,7 +197,7 @@ int main(int argc, char** argv)
 	first_adr=adr=0; /* Load address */
 	line=run=1;      /* Line number and loop variable */
 	flag_adr=0;      /* Load address undefined */
-	madr = 0; /* Start from 0 */
+	madr = 0x100; /* The first byte in the file is at 0x100*/
 
 	while(run)
 	{

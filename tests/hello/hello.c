@@ -2,7 +2,7 @@
 
 #include "tests/hello/putchar/putchar.h"
 
-void outp(unsigned char val, unsigned int port) __sdcccall(1) __naked;
+void outp(unsigned char val, unsigned int port) __sdcccall(1);
 
 int main() {
    unsigned char vals[] = { 0x0, 0xaa, 0x55, 0xff};
