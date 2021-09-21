@@ -2,8 +2,10 @@
 
 #include "tests/hello/putchar/putchar.h"
 
+char hello[] = "hello world";
+
 int main() {
-   printf("hello world!\n");
+   puts(hello);
    return 0;
 }
 

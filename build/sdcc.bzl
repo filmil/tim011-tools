@@ -212,6 +212,8 @@ def _sdcc_z180_c_binary_impl(ctx):
     sources = [file.path for file in source_files]
     all_args = [
           "--no-std-crt0",
+          # Hm, how to put data to follow code?
+          "--dataseg", "CODE",
           "-mz180",
     ] + lib_args + incl_args + [
           "-o",
@@ -219,7 +221,8 @@ def _sdcc_z180_c_binary_impl(ctx):
     ] + sources
     ctx.actions.run(
         outputs = [ihx_file] + declare_sdcc_extensions(
-            ctx.actions.declare_file, ctx.label.name, ["rel", "sym", "asm", "lst", "map"]),
+            ctx.actions.declare_file, ctx.label.name,
+            ["rel", "sym", "asm", "lst", "map", "lk", "noi"]),
         inputs = (runfiles_inputs +
             source_files +
             dep_headers +
