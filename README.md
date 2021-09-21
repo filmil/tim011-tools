@@ -41,13 +41,14 @@ being, but it is a beginning.
 From the top level directory:
 
 ```
-bazel build //tests/hello
+./run_hello.sh
 ```
 
-This command will build a `.com` program (a CP/M executable) which consists of
-several source files, links a custom CP/M `crt0.s` (C runtime library) and is
-compiled by [SDCC][sdcc] for the HD64180 processor.  You don't need to download
-SDCC or any other tools: `bazel` will do that for you automatically.
+This command will build and run in a CP/M emulator a `.com` program (a CP/M
+executable) which consists of several source files, links a custom CP/M
+`crt0.s` (C runtime library) and is compiled by [SDCC][sdcc] for the HD64180
+processor.  You don't need to download SDCC or any other tools: `bazel` will do
+that for you automatically.
 
 [baz]: https://bazel.io
 [sdcc]: http://sdcc.sourceforge.net
