@@ -39,9 +39,7 @@ __clock::
 	ret
 
 _exit::
-	;; CP/M does a "call" into the new program, so "ret" should be enough
-	;; to come back.
-	ret
+	rst 0
 
 gsinit:
     ;; TODO
