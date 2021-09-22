@@ -67,6 +67,7 @@ sh_binary(
   ],
 )
 
+# gen_runner generates a runner script for a CP/M binary.
 sh_binary(
   name = "gen_runner",
   visibility = ["//visibility:public"],

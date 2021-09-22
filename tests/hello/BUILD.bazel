@@ -5,6 +5,7 @@ sdcc_z180_c_binary(
   srcs = ["hello.c"],
   deps = [
     "//tests/hello/putchar",
+    # This binary links assembly code!
     ":dot",
   ]
 )
@@ -14,7 +15,10 @@ sdcc_z180_asm_library(
   srcs = ["dot.s"],
 )
 
+# Run this target using:
+#
+#   bazel run //tests/hello:emu
 sdcc_z180_cpm_emu_run(
-    name = "hello_bin",
+    name = "emu",
     binary=":hello",
 )

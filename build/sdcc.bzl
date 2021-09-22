@@ -392,5 +392,9 @@ def sdcc_z180_cpm_emu_run(name, binary, visibility=None):
           ":{}".format(ggen_name),
           "//CPMEmulator:cpm",
         ],
+        deps = [
+          # To detect the runfiles dir.
+          "@bazel_tools//tools/bash/runfiles",
+        ],
         visibility = visibility,
     )

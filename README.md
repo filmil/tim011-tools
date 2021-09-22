@@ -41,7 +41,7 @@ being, but it is a beginning.
 From the top level directory:
 
 ```
-./run_hello.sh
+bazel run //tests/hello:emu
 ```
 
 This command will build and run in a CP/M emulator a `.com` program (a CP/M
