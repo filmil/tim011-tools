@@ -33,6 +33,7 @@ toolchain(
 
 sh_binary(
   name = "mescc_compiler",
+  visibility = ["//visibility:public"],
   srcs = ["mescc.sh"],
   data = [
     "@mescc//:cc.com",
@@ -53,10 +54,24 @@ sh_binary(
 
 sh_binary(
   name = "cpmrun",
+  visibility = ["//visibility:public"],
   srcs = ["cpmrun.sh"],
   data = [
     "//CPMEmulator:cpm",
     # Flags processing
+    "@gotopt2//cmd/gotopt2:gotopt2",
+  ],
+  deps = [
+    # To detect the runfiles dir.
+    "@bazel_tools//tools/bash/runfiles",
+  ],
+)
+
+sh_binary(
+  name = "gen_runner",
+  visibility = ["//visibility:public"],
+  srcs = ["gen_runner.sh"],
+  data = [
     "@gotopt2//cmd/gotopt2:gotopt2",
   ],
   deps = [

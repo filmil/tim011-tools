@@ -19,6 +19,11 @@ SdccHeaders = provider(
     fields = ["headers", "rels"],
 )
 
+CPMBinary = provider(
+    doc = "Information about a generated CP/M binary",
+    fields = ["binary"],
+)
+
 _SDCC_OPTIONS = [
   "-mz180",
   # 16-bit I/O space of the HD64180
@@ -249,7 +254,8 @@ def _sdcc_z180_c_binary_impl(ctx):
         ],
     )
     return [
-        DefaultInfo(files=depset([com_file]))
+        DefaultInfo(files=depset([com_file])),
+        CPMBinary(binary=com_file),
     ]
 
 sdcc_z180_c_binary = rule(
@@ -358,3 +364,33 @@ sdcc_z180_toolchain = rule(
     "deps": attr.label_list(),
   },
 )
+
+def sdcc_z180_cpm_emu_run(name, binary, visibility=None):
+    script_name = name + ".sh"
+    ggen_name = name + "_gen"
+    native.genrule(
+        name = ggen_name,
+        cmd = """\
+            $(location //build:gen_runner) \
+            --script=$@ \
+            --runner=$(location //CPMEmulator:cpm) \
+            --cpm-binary=$(location {binary})
+        """.format(script=script_name, binary=binary),
+        outs = [script_name],
+        tools = [
+            "//build:cpmrun",
+            "//build:gen_runner",
+            "//CPMEmulator:cpm",
+            binary,
+        ],
+        visibility = visibility,
+    )
+    native.sh_binary(
+        name = name,
+        srcs = [ script_name ],
+        data = [
+          ":{}".format(ggen_name),
+          "//CPMEmulator:cpm",
+        ],
+        visibility = visibility,
+    )

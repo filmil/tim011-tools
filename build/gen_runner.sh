@@ -1,5 +1,6 @@
-#! /bin/bash
+#!/bin/bash
 
+set -x
 set -eo pipefail
 
 readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -27,9 +28,15 @@ fi
 
 GOTOPT2_OUTPUT=$($_gotopt_binary "${@}" <<EOF
 flags:
-- name: "--com-file"
+- name: "script"
   type: string
-  help: "The .COM file path to run."
+  help: "The destination script file to generate"
+- name: "runner"
+  type: string
+  help: "The runner binary to use"
+- name: "cpm-binary"
+  type: string
+  help: "The CP/M binary to run"
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -40,13 +47,31 @@ fi
 # Evaluate the output of the call to gotopt2, shell vars assignment is here.
 eval "${GOTOPT2_OUTPUT}"
 
-# ---
-readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
-trap "rm -fr ${_tmpdir}" EXIT
+_script="${gotopt2_script}"
+_emulator="${gotopt2_runner}"
+_binary="${gotopt2_cpm_binary}"
 
-readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
-
+cat<<EOF > "${_script}"
+#!/bin/bash
+echo pwd:${PWD}
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+RUNNER="$(rlocation ${_emulator})"
+BINARY="$(rlocation ${_binary})"
+DIR="\$(dirname \$BINARY)"
 (
-  echo "${_emulator}" ${gotopt2_com_file}
+  cd "\${DIR}"
+  BASE="\$(basename \$BINARY)"
+  BASE_NOEXT="\${BASE%%.*}"
+  "\${RUNNER}" "\${BASE_NOEXT}"
 )
-
+EOF
+chmod +x "${_script}"

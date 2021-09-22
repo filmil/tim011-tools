@@ -1,4 +1,4 @@
-load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library")
+load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
 
 sdcc_z180_c_binary(
   name = "hello",
@@ -12,4 +12,9 @@ sdcc_z180_c_binary(
 sdcc_z180_asm_library(
   name = "dot",
   srcs = ["dot.s"],
+)
+
+sdcc_z180_cpm_emu_run(
+    name = "hello_bin",
+    binary=":hello",
 )
