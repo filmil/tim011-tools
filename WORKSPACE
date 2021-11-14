@@ -28,10 +28,10 @@ http_archive(
 
 http_archive(
     name = "sdcc-linux",
-    sha256 = "457bd88adefca41798b9415f7656b3bdd9cddb6962bc16193497c4b95546abc0",
+    sha256 = "ad7a447c7d9780b6842636e56d42640b66df378a4b5b8c6b6c729dfddc47277b",
     type = "tar.bz2",
     urls = [
-        "http://sourceforge.net/projects/sdcc/files/snapshot_builds/amd64-unknown-linux2.5/sdcc-snapshot-amd64-unknown-linux2.5-20210827-12654.tar.bz2/download",
+        "https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.1.0/sdcc-4.1.0-amd64-unknown-linux2.5.tar.bz2/download",
     ],
     build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
 )
