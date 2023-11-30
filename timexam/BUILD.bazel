@@ -2,9 +2,10 @@ load("//build:rules.bzl", "mescc_binary")
 load("//build:sdcc.bzl", "sdcc_z180_cpm_emu_run")
 
 mescc_binary(
-    name = "prexam",
+    name = "timexam",
     srcs = [
-        "prexam.c",
+		"//lib/sprites:sprites.h",
+        "timexam.c",
     ],
     deps = [
         "//lib/tim:timprint",
@@ -14,5 +15,5 @@ mescc_binary(
 
 sdcc_z180_cpm_emu_run(
     name = "emu",
-    binary=":prexam",
+    binary=":timexam",
 )
