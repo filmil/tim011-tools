@@ -87,12 +87,12 @@ toolchain_type(name = "toolchain_type_sdcc_z180")
 
 sdcc_z180_toolchain(
     name = "sdcc_z180_linux",
-    assembler = "@sdcc-linux//:sdcc/bin/sdasz80",
-    compiler = "@sdcc-linux//:sdcc/bin/sdcc",
+    assembler = "@sdcc-linux//:bin/sdasz80",
+    compiler = "@sdcc-linux//:bin/sdcc",
     hextocom = "//third_party/hextocom",
-    librarian = "@sdcc-linux//:sdcc/bin/sdar",
-    linker = "@sdcc-linux//:sdcc/bin/sdldz80",
-    preprocessor = "@sdcc-linux//:sdcc/bin/sdcpp",
+    librarian = "@sdcc-linux//:bin/sdar",
+    linker = "@sdcc-linux//:bin/sdldz80",
+    preprocessor = "@sdcc-linux//:bin/sdcpp",
     libs = "@sdcc-linux//:libs_z180",
     includes = "@sdcc-linux//:includes_z180",
     # Might need includes and libs.

@@ -1,9 +1,7 @@
 This is an example of a library with dependencies.
 
-This is work in progress and does not work correctly yet.
-
-If you want to see it fail you can do:
+See it run as follows:
 
 ```
-bazel build //tests/hello
+bazel run //tests/hello:emu
 ```

@@ -28,11 +28,11 @@ http_archive(
 
 http_archive(
     name = "sdcc-linux",
-    sha256 = "ad7a447c7d9780b6842636e56d42640b66df378a4b5b8c6b6c729dfddc47277b",
     type = "tar.bz2",
     urls = [
-        "https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.1.0/sdcc-4.1.0-amd64-unknown-linux2.5.tar.bz2/download",
+        "https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.3.0/sdcc-4.3.0-amd64-unknown-linux2.5.tar.bz2/download",
     ],
+    strip_prefix = "sdcc-4.3.0",
     build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
 )
 

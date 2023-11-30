@@ -1,27 +1,30 @@
+# This file will be inserted into the SDCC binary download to expose
+# the utilities used in compiling.
+
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
   name = "binaries",
   srcs = [
-    "sdcc/bin/sdar",
-    "sdcc/bin/sdasz80",
-    "sdcc/bin/sdcc",
-    "sdcc/bin/sdcpp",
-    "sdcc/bin/sdldz80",
+    "bin/sdar",
+    "bin/sdasz80",
+    "bin/sdcc",
+    "bin/sdcpp",
+    "bin/sdldz80",
   ],
 )
 
 filegroup(
     name = "libs_z180",
     srcs = [
-        "sdcc/share/sdcc/lib/z180/z180.lib",
+        "share/sdcc/lib/z180/z180.lib",
     ],
 )
 
 filegroup(
     name = "includes_z180",
     srcs = [
-        "sdcc/share/sdcc/include/z180/z180.h",
-    ] + glob(["sdcc/share/sdcc/include/*.h"])
-      + glob(["sdcc/share/sdcc/include/asm/z80/*.h"]),
+        "share/sdcc/include/z180/z180.h",
+    ] + glob(["share/sdcc/include/*.h"])
+      + glob(["share/sdcc/include/asm/z80/*.h"]),
 )
