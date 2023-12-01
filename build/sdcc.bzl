@@ -158,6 +158,7 @@ def _sdcc_z180_c_library_impl(ctx):
             single_rel_file.path,
             source_file.path]
         ctx.actions.run(
+            mnemonic = "SDCC",
             outputs = [single_rel_file] + declare_sdcc_extensions(
                 ctx.actions.declare_file, source_file.basename,
                 ["rel", "sym", "asm", "lst"]),
@@ -171,6 +172,7 @@ def _sdcc_z180_c_library_impl(ctx):
     # Create a library.
     lib_file = ctx.actions.declare_file("{}.lib".format(ctx.label.name))
     ctx.actions.run(
+        mnemonic = "LIB",
         outputs = [lib_file],
         inputs = all_rel_files,
         executable = get_librarian(info),
@@ -230,6 +232,7 @@ def _sdcc_z180_c_binary_impl(ctx):
           out_name,
     ] + sources
     ctx.actions.run(
+        mnemonic = "SDCC",
         outputs = [ihx_file] + declare_sdcc_extensions(
             ctx.actions.declare_file, ctx.label.name,
             ["rel", "sym", "asm", "lst", "map", "lk", "noi"]),
@@ -243,9 +246,11 @@ def _sdcc_z180_c_binary_impl(ctx):
         arguments = all_args,
     )
     com_file = ctx.actions.declare_file("{}.com".format(ctx.label.name))
+    outputs = [com_file]
     hextocom = info.hextocom.files.to_list()[0]
     ctx.actions.run(
-        outputs = [com_file],
+        mnemonic = "HEXTOCOM",
+        outputs = outputs,
         inputs = [ihx_file],
         executable = hextocom,
         arguments = [
@@ -254,7 +259,7 @@ def _sdcc_z180_c_binary_impl(ctx):
         ],
     )
     return [
-        DefaultInfo(files=depset([com_file])),
+        DefaultInfo(files=depset(outputs)),
         CPMBinary(binary=com_file),
     ]
 
@@ -283,6 +288,7 @@ def _sdcc_z180_asm_library_impl(ctx):
             source_file.path,
         ]
         ctx.actions.run(
+            mnemonic = "ZASM",
             outputs = [single_rel_file] + declare_sdcc_extensions(
                 ctx.actions.declare_file, source_file.basename,
                 ["sym", "lst"]),

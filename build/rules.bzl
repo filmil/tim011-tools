@@ -21,6 +21,7 @@ def _mescc_binary_impl(ctx):
             deps += [file]
             include_files += [file.path]
     ctx.actions.run(
+      mnemonic = "MESCC",
       outputs = [out_file],
       inputs = runfiles_inputs + [source] + deps,
       executable = compiler,
