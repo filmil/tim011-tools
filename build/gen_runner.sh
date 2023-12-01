@@ -55,8 +55,8 @@ cat<<EOF > "${_script}"
 set -x
 env
 echo genscript:PWD=${PWD}
-RUNNER="\${BUILD_WORKING_DIRECTORY}/${_emulator}"
-BINARY="\${BUILD_WORKING_DIRECTORY}/${_binary}"
+RUNNER="\${BUILD_WORKSPACE_DIRECTORY}/${_emulator}"
+BINARY="\${BUILD_WORKSPACE_DIRECTORY}/${_binary}"
 DIR="\$(dirname \$BINARY)"
 (
   cd "\${DIR}"
