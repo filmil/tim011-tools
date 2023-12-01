@@ -1,5 +1,5 @@
 load("//build:rules.bzl", "mescc_binary")
-load("//build:sdcc.bzl", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
 
 mescc_binary(
     name = "prexam",
@@ -16,3 +16,18 @@ sdcc_z180_cpm_emu_run(
     name = "emu",
     binary=":prexam",
 )
+
+sdcc_z180_c_binary(
+    name = "prexam2",
+    srcs = [ "print_example.c" ],
+    deps = [
+        "//lib/tim:tim_print_lib",
+        "//lib/zxchars:zx_spectrum_font",
+    ],
+)
+
+sdcc_z180_cpm_emu_run(
+    name = "emu2",
+    binary = ":prexam2",
+)
+
