@@ -21,3 +21,17 @@ sdcc_z180_c_library(
         ":tim_print_asm",
     ],
 )
+
+sdcc_z180_asm_library(
+    name = "tim_graph_asm",
+    srcs = [ "timgraph.S" ],
+)
+
+sdcc_z180_c_library(
+    name = "tim_graph_lib",
+    srcs = [ "timgraph.c"],
+    hdrs = [ "timgraph.h" ],
+    deps = [
+        ":tim_graph_asm",
+    ],
+)

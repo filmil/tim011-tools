@@ -1,4 +1,22 @@
+load("//build:sdcc.bzl",  "sdcc_z180_c_binary", "sdcc_z180_c_library", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
+
 exports_files([
   "sprites.h",
   "sprites.png",
 ])
+
+package(default_visibility=["//visibility:public"])
+
+sdcc_z180_asm_library(
+    name = "sprites",
+    srcs = [ "sprites.S" ],
+)
+
+sdcc_z180_c_library(
+    name = "sprites_sdcc_lib",
+    hdrs = [ "sprites_sdcc.h" ],
+    deps = [
+        ":sprites",
+    ],
+)
+
