@@ -24,7 +24,9 @@ int main(void) {
     puttile(10,24,dizzy3);
     puttile(14,24,dizzy4);
 
-    // Does not work.
+    circle(100, 100, 200, COLOR_DARK_GREEN);
+    box(100, 100, 200, 200, COLOR_LIGHT_GREEN);
+
     for(;;);
 }
 

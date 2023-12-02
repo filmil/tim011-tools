@@ -38,4 +38,8 @@ extern void line(color_t color, unsigned int x0, unsigned int y0, unsigned int x
 
 extern void puttile(int x, int y, const char *addr);
 
+void circle(int x0, int y0, int radius, color_t col);
+
+void box(int x0, int y0, int x1, int y1, color_t col);
+
 #endif // LIB_TIM_TIMGRAPH_H_
