@@ -3,6 +3,11 @@
     .module zx_chars_tim_font
     .area _CODE
     .globl _zxchars
+    .globl timfont
+
+;; timprint library looks for this global to get the font
+;; description from.
+timfont:
 
 ;;  Raw data for a ZX Spectrum 8x8 bit font.
 

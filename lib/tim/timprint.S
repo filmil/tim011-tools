@@ -28,15 +28,16 @@
     ; Exported
     .globl _prstr
     .globl _prsetinv
+    .globl _chrinv
 
     ; Imported.
-    .globl _timfont
+    .globl timfont
 
 _cursorx:   .dw 0           ; current cursor x position
 _cursory:   .dw 0           ; current cursor y position
-_chrinv:    .dw #0x0800     ; XOR value for drawing (0800 - no changes, 08FF - inverted chars)
+_chrinv:    .db #0x00
+_chrinv1:   .db #0x08     ; XOR value for drawing (0800 - no changes, 08FF - inverted chars)
 _chrsub:    .dw #0x20       ; value to substract from char code (20 - ASCII, 0 - screen codes)
-_timfont:   .dw 0           ; pointer to the font.
 
 ; puts character to screen and updates cursor position
 ; prchrxy(x, y, chr)
@@ -76,7 +77,7 @@ _prchrxy0:
     ADD HL, HL
     ADD HL, HL
     ADD HL, HL
-    LD DE, (_timfont)
+    LD DE, #timfont
     ADD HL, DE
 ;    EXX
 ;    LD HL,(_chrinv)     ; load _chrinv to HL'
@@ -130,11 +131,12 @@ _prchrxy5:
 
 ; prints null-terminated string at current cursor position
 ; prstr(str)
+; str passed in HL
 _prstr:
-    POP AF  ; return address
-    POP HL  ; str
-    PUSH HL
-    PUSH AF
+    ;POP AF  ; return address
+    ;POP HL  ; str
+    ;PUSH HL
+    ;PUSH AF
 _prstr1:
     PUSH HL
     LD L,(HL)   ; get net xhar
@@ -169,12 +171,9 @@ cursorxy:
 ; sets XOR value for character drawing
 ; prsetinv(xor)
 ; xor=0 - normal drawing,  xor=0xFF - inverted drawing
+; xor passed in hl
 _prsetinv:
-    POP AF
-    POP HL
-    PUSH HL
-    PUSH AF
-    LD (_chrinv), HL
+    LD (_chrinv), A
     RET
 
 ; sets the value to be substracted from character code
