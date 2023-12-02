@@ -4,7 +4,7 @@ load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library", "sdcc_z1
 mescc_binary(
     name = "timexam",
     srcs = [
-		"//lib/sprites:sprites.h",
+	"//lib/sprites:sprites.h",
         "timexam.c",
     ],
     deps = [

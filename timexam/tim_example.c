@@ -2,57 +2,16 @@
 #include "lib/sprites/sprites_sdcc.h"
 
 int main(void) {
-    int i, j;
-    unsigned char f;
-    f = 0;
-/*
-    for (j = 0; j < 10; j++) {
-        for (i = 0; i < 200; ++i) {
-            plotxy(i+0,i+0,0);
-            plotxy(i+10,i,0);
-            plotxy(i+20,i,0);
-        }
-        for (i = 0; i < 200; ++i) {
-            plotxy(i+0,i+0,3);
-            plotxy(i+10,i,2);
-            plotxy(i+20,i,1);
-        }
+
+    // Works.
+    for (int i = 0; i < 100; i++) {
+        plotxy(i, i, COLOR_BRIGHT_GREEN);
     }
 
-    for (j = 0; j < 256; j++) {
-        for (i = 0; i < 200; ++i) {
-            scroll(j);
-        }
-    }
-*/
+    line(COLOR_BRIGHT_GREEN, 100, 100, 200, 0);
 
-/*
-    for (i = 0; i < 200; ++i) {
-        plotxy(i+0,i+0,3);
-        plotxy(i+10,i,2);
-        plotxy(i+20,i,1);
-        plotxy(i+100,i+0,3);
-        plotxy(i+110,i,2);
-        plotxy(i+120,i,1);
-    }
 
-    gettile(0,20,backgr);
-    for (i = 1; i < 80; ++i) {
-        puttile(i-1,20,backgr);
-        gettile(i,20,backgr);
-        ortile(i,20,sprite);
-    }
-
-    for (j = 0; j < 256; j++) {
-        for (i = 0; i < 200; ++i) {
-            scroll(j);
-        }
-    }
-*/
-
-    puttile(2,5,0);
     puttile(6,5,pacman2);
-    puttile(10,5,2);
     puttile(10,10,miner);
 
     puttile(20,10,ghosts1);
@@ -65,24 +24,7 @@ int main(void) {
     puttile(10,24,dizzy3);
     puttile(14,24,dizzy4);
 
-/*
-    for (i = 0; i < 127; i+=4) {
-        for (j = 0; j < 63; j+=4) {
-            puttile(i,j,sprite);
-            if (f & 1)
-                flptilex(sprite);
-            else
-                flptiley(sprite);
-            f++;
-        }
-        if (f & 1)
-            flptilex(sprite);
-        else
-            flptiley(sprite);
-        f++;
-    }
-*/
+    // Does not work.
     for(;;);
-    return 0;
 }
 

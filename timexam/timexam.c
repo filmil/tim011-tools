@@ -5,8 +5,7 @@
 
 main() {
     int i, j;
-    unsigned char f;
-    f = 0;
+    unsigned char f = 0;
 /*
     for (j = 0; j < 10; j++) {
         for (i = 0; i < 200; ++i) {

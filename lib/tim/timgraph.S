@@ -38,14 +38,30 @@
 ; pixelmask = col << ((x%4)*2)
 _plotxy::
 plotxy::
-    POP AF  ; return address
-    POP DE  ; col
-    POP BC  ; y
-    POP HL  ; x
-    PUSH    HL  ; Small C requires unmodified SP
-    PUSH    BC
-    PUSH    DE
-    PUSH    AF
+    ;POP AF  ; return address
+    ;POP DE  ; col
+    ;POP BC  ; y
+    ;POP HL  ; x
+    ;PUSH    HL  ; Small C requires unmodified SP
+    ;PUSH    BC
+    ;PUSH    DE
+    ;PUSH    AF
+
+    ; SDCC orders the parameters the other way around:
+    ;
+    ; ret address <- sp
+    ; x
+    ; y
+    ; color
+    pop af ; ret
+    pop hl ; x
+    pop bc ; y
+    pop de ; color
+
+    push de ; color
+    push bc ; y
+    push hl ; x
+    push af ; ret
 
     PUSH DE ; save col
     PUSH HL ; save x
@@ -122,7 +138,7 @@ _linxleft:  .dw 0    ; how many x movements is left
 _linyleft:  .dw 0    ; how many y movements is left
 _linsy:     .dw 0    ; 1 or -1(255)
 _linerr:    .dw 0
-_line::
+_line_flip::
 line::
     POP AF  ; return address
     EX AF,AF'
@@ -520,7 +536,7 @@ gettile2:
 ; puttile(x, y, addr)
 ; x = 0 .. 127, y = 0 .. 63, addr 0-255 index based, or full address
 ; ofset = x*256 + y*4 + 8000H
-_puttile::
+_puttile_flip::
 puttile::
     POP AF  ; return address
     POP HL  ; addr
