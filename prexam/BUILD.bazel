@@ -22,6 +22,7 @@ sdcc_z180_c_binary(
     srcs = [ "print_example.c" ],
     deps = [
         "//lib/tim:tim_print_lib",
+        "//lib/tim:tim_print_asm",
         "//lib/zxchars:zx_spectrum_font",
     ],
 )

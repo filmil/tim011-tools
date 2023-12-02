@@ -1,9 +1,4 @@
-
-// From //lib/tim:tim_print_lib
-void inline prstr(const char* s) __sdcccall(1) __naked;
-void inline prsetinv(char v) __sdcccall(1) __naked;
-
-extern char chrinv;
+#include "lib/tim/timprint.h"
 
 int main(void) {
     const char* str1 = "Trla Baba Lan Da Joj Prodje Dan! ";
@@ -15,8 +10,9 @@ int main(void) {
         prstr(str2);
         prstr(str3);
         prsetinv((i & 1) ? 0xff : 0x00);
+
         // Doesn't seem to be any faster.  Standard tricks like loop unroll
-                // also don't seemto do anything special.
+        // also don't seem to do anything special.
         //chrinv = (i & 1) ? 0xff : 0x00;
     }
     return 0;

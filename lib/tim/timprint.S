@@ -29,6 +29,9 @@
     .globl _prstr
     .globl _prsetinv
     .globl _chrinv
+    .globl _prchrxy
+    .globl _cursorxy
+    .globl _prsetsub
 
     ; Imported.
     .globl timfont
@@ -43,7 +46,7 @@ _chrsub:    .dw #0x20       ; value to substract from char code (20 - ASCII, 0 -
 ; prchrxy(x, y, chr)
 ; x = 0 .. 63, y = 0 .. 31, chr 0-255 
 ; ofset = x*256*2 + y*4*2 + 8000H
-prchrxy:
+_prchrxy:
     POP AF  ; return address
     POP HL  ; chr
     POP DE  ; y
@@ -157,7 +160,7 @@ _prstr2:
 ; sets cursor position
 ; cursorxy(x, y)
 ; x = 0 .. 63, y = 0 .. 31
-cursorxy:
+_cursorxy:
     POP AF  ; return address
     POP HL  ; y
     POP DE  ; x
@@ -179,7 +182,7 @@ _prsetinv:
 ; sets the value to be substracted from character code
 ; prsetsub(sub)
 ; sub=0x20 - ASCII coding,  sub=0 - no coding
-prsetsub:
+_prsetsub:
     POP AF
     POP HL
     PUSH HL

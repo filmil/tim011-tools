@@ -1,4 +1,4 @@
-load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl",  "sdcc_z180_c_binary", "sdcc_z180_c_library", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
 
 package(default_visibility=["//visibility:public"])
 
@@ -10,6 +10,14 @@ filegroup(
 )
 
 sdcc_z180_asm_library(
-    name = "tim_print_lib",
+    name = "tim_print_asm",
     srcs = [ "timprint.S" ],
+)
+
+sdcc_z180_c_library(
+    name = "tim_print_lib",
+    hdrs = [ "timprint.h" ],
+    deps = [
+        ":tim_print_asm",
+    ],
 )
