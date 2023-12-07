@@ -1,0 +1,37 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
+configure_make(
+  name = "cpmtools",
+  targets = ["", "install"],
+  configure_in_place = True,
+  lib_source = ":all_files",
+  out_binaries = [ 
+		"cpmchattr", 
+		"cpmchmod", 
+		"cpmcp", 
+		"cpmls", 
+		"cpmrm", 
+		"fsck.cpm", 
+		"fsed.cpm", 
+		"mkfs.cpm", 
+  ],
+  visibility = ["//visibility:public"],
+)
+
+# TODO: filmil - add a filegroup for each needed file.
+filegroup(
+    name = "cpmcp",
+    srcs = [":cpmtools" ],
+    output_group = "cpmcp",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cpmls",
+    srcs = [":cpmtools" ],
+    output_group = "cpmls",
+    visibility = ["//visibility:public"],
+)

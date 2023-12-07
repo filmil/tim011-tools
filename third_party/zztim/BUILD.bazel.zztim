@@ -1,0 +1,10 @@
+#
+
+sh_binary(
+		name = "timdisk",
+		srcs = [ "timdisk.sh", ],
+		data = [
+				"@cpmtools//:cpmls",
+				"@cpmtools//:cpmcp",
+		]
+)

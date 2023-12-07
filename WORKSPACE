@@ -73,3 +73,32 @@ git_repository(
 
 load("@gotopt2//build:deps.bzl", "gotopt2_dependencies")
 gotopt2_dependencies()
+
+http_archive(
+    name = "cpmtools",
+    type = ".tar.gz",
+    urls = [
+        "http://www.moria.de/~michael/cpmtools/files/cpmtools-2.23.tar.gz",
+    ],
+    sha256 = "7839b19ac15ba554e1a1fc1dbe898f62cf2fd4db3dcdc126515facc6b929746f",
+    strip_prefix = "cpmtools-2.23",
+    build_file = "//third_party/cpmtools:BUILD.bazel.cpmtools",
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    strip_prefix = "rules_foreign_cc-0.9.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.9.0.tar.gz",
+    sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
+)
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+rules_foreign_cc_dependencies()
+
+new_git_repository(
+  name = "zztim",
+  remote = "https://bitbucket.org/zzarko/tim011-tools",
+  commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
+  build_file = "//third_party/zztim:BUILD.bazel.zztim",
+  shallow_since = "1610562846 +0100",
+)
+
