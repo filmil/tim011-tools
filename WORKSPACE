@@ -104,5 +104,9 @@ new_git_repository(
   commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
   build_file = "//third_party/zztim:BUILD.bazel.zztim",
   shallow_since = "1610562846 +0100",
+  patch_args = [ "-p1" ],
+  patches = [
+        "//third_party/zztim:0001-fix-patch-for-bazel.patch",
+  ],
 )
 

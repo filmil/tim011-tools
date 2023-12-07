@@ -6,5 +6,9 @@ sh_binary(
 		data = [
 				"@cpmtools//:cpmls",
 				"@cpmtools//:cpmcp",
-		]
+		],
+		env = {
+				"CPMLS": "$(location @cpmtools//:cpmls)",
+				"CPMCP": "$(location @cpmtools//:cpmcp)",
+		},
 )

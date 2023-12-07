@@ -1,0 +1,90 @@
+From c10851a6cbfe65bd8de448d5a992b9d77209b0bb Mon Sep 17 00:00:00 2001
+From: Filip Filmar <filmil@gmail.com>
+Date: Thu, 7 Dec 2023 07:56:46 +0000
+Subject: [PATCH] fix: patch for bazel
+
+---
+ timdisk.sh | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/timdisk.sh b/timdisk.sh
+index ff1868c..cf67c11 100755
+--- a/timdisk.sh
++++ b/timdisk.sh
+@@ -16,6 +16,9 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ 
++CPMCP="${CPMCP:-cpmcp}"
++CPMLS="${CPMLS:-cpmls}"
++
+ # constants
+ CPMTYPE="tim011"
+ DISKDEFS="diskdefs"
+@@ -32,7 +35,7 @@ exec 10<&0
+ function usage {
+     colecho "[g]Script for copying files from/to TIM-011 images"
+     colecho "[b](C) 2019 Zarko Zivanov, www.onceuponabyte.org"
+-    colecho "For licnece, see [m]https://www.gnu.org/licenses/"
++    colecho "For license, see [m]https://www.gnu.org/licenses/"
+     colecho "\nUsage:"
+     colecho "[g]$0[n] [c]-e <image>[n] [m][directory]"
+     colecho "   Extracts files from TIM-011 image into directory."
+@@ -145,7 +148,7 @@ while getopts ":he:c:l:t:" opt; do
+         # find user areas in image
+         IMG=$OPTARG
+         if [ -f "$IMG" ]; then
+-            USERS=$(cpmls -f $CPMTYPE "$IMG" | grep -E "^[0-9]{1,2}:$" | grep -oE "[0-9]{1,2}")
++            USERS=$(${CPMLS} -f $CPMTYPE "$IMG" | grep -E "^[0-9]{1,2}:$" | grep -oE "[0-9]{1,2}")
+             colecho "[c]Found user areas: [g]$(echo $USERS)"
+         else
+             error "Image [g]$IMG[r] not found!"
+@@ -231,10 +234,10 @@ case $INPUT in
+             colecho "Extracting files for user area [g]$user"
+             if [ $user != 0 ]; then
+                 mkdir -p "$DIR/$user"
+-                cpmcp -f $CPMTYPE "$IMG" $user:* "$DIR/$user/"
++                "${CPMCP}" -f $CPMTYPE "$IMG" $user:* "$DIR/$user/"
+             else
+                 mkdir -p "$DIR"
+-                cpmcp -f $CPMTYPE "$IMG" $user:* "$DIR/"
++                "${CPMCP}" -f $CPMTYPE "$IMG" $user:* "$DIR/"
+             fi
+         done
+         ;;
+@@ -262,18 +265,18 @@ case $INPUT in
+         for user in $USERS; do
+             colecho "Copying files for user area [g]$user"
+             if [ $user != 0 ]; then
+-                cpmcp -f $CPMTYPE "$IMG" "$DIR/$user/"* $user:
++                "${CPMCP}" -f $CPMTYPE "$IMG" "$DIR/$user/"* $user:
+             else
+-                 find "$DIR" -maxdepth 1 -type f -exec cpmcp -f $CPMTYPE "$IMG" '{}' $user: \;
++                 find "$DIR" -maxdepth 1 -type f -exec "${CPMCP}" -f $CPMTYPE "$IMG" '{}' $user: \;
+             fi
+         done
+         ;;
+     $INPLST)
+-        # get pattern if it rxists
++        # get pattern if it exists
+         if [ "$1" != "" ]; then
+-            OUT=$(cpmls -f $CPMTYPE -d "$IMG" "$1")
++            OUT=$(${CPMLS} -f $CPMTYPE -d "$IMG" "$1")
+         else
+-            OUT=$(cpmls -f $CPMTYPE -d "$IMG")
++            OUT=$(${CPMLS} -f $CPMTYPE -d "$IMG")
+         fi
+         USER0=""
+         # check if "User 0" should be added
+@@ -291,7 +294,7 @@ case $INPUT in
+         OUT=$(sed -E "s/([A-Z0-9][A-Z0-9 ]{8}(SYS|MDL|RCP|Z3T|FCP|IOP))/[m]\1[n]/g" <<< "$OUT")
+         colecho "$OUT"
+         # display occupied and free space
+-        cpmls -f $CPMTYPE -D "$IMG" | tail -n 1
++        "${CPMLS}" -f $CPMTYPE -D "$IMG" | tail -n 1
+         ;;
+ esac
+ 
+-- 
+2.34.1
+
