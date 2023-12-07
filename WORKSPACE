@@ -83,6 +83,10 @@ http_archive(
     sha256 = "7839b19ac15ba554e1a1fc1dbe898f62cf2fd4db3dcdc126515facc6b929746f",
     strip_prefix = "cpmtools-2.23",
     build_file = "//third_party/cpmtools:BUILD.bazel.cpmtools",
+    patch_args = [ "-p1" ],
+    patches = [
+        "//third_party/cpmtools:0001-fix-patch-diskdefs-for-tim011.patch",
+    ],
 )
 
 http_archive(

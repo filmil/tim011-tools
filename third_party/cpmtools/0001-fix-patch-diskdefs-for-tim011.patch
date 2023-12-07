@@ -1,0 +1,35 @@
+From a540f0dce1a0b374e9f77303cbaf99837c0ec898 Mon Sep 17 00:00:00 2001
+From: Filip Filmar <filmil@gmail.com>
+Date: Thu, 7 Dec 2023 07:40:31 +0000
+Subject: [PATCH] fix: patch diskdefs for tim011
+
+---
+ diskdefs | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/diskdefs b/diskdefs
+index aedb733..706eb33 100644
+--- a/diskdefs
++++ b/diskdefs
+@@ -1958,3 +1958,18 @@ offset 128
+ boottrk 0
+ os 3
+ end
++
++# TIM011/Micromint SB180 - DSDD 3.5\" - 1024 x 5
++diskdef tim011
++  seclen 1024
++  tracks 160
++  sectrk 5
++  secbase 17
++  blocksize 2048
++  maxdir 256
++  skew 1
++  boottrk 2
++  os 2.2
++end
++
++
+-- 
+2.34.1
+
