@@ -14,11 +14,13 @@ int main(void) {
     puttile(6,5,pacman2);
     puttile(10,10,miner);
 
+    // Four quarters of the Ghosts'n'Goblins sprite.
     puttile(20,10,ghosts1);
     puttile(24,10,ghosts2);
     puttile(20,14,ghosts3);
     puttile(24,14,ghosts4);
 
+    // Four quarters of the Dizzy sprite.
     puttile(10,20,dizzy1);
     puttile(14,20,dizzy2);
     puttile(10,24,dizzy3);
@@ -27,6 +29,7 @@ int main(void) {
     circle(100, 100, 200, COLOR_DARK_GREEN);
     box(100, 100, 200, 200, COLOR_LIGHT_GREEN);
 
+    // Block the emu so that we can see what's on screen.
     for(;;);
 }
 
