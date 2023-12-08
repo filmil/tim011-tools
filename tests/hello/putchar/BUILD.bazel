@@ -3,7 +3,10 @@ load("//build:sdcc.bzl", "sdcc_z180_c_library")
 package(default_visibility = ["//visibility:public"])
 
 sdcc_z180_c_library(
-  name = "putchar",
-  srcs = ["putchar.c", "getchar.c",],
-  hdrs = ["putchar.h",],
+    name = "putchar",
+    srcs = [
+        "getchar.c",
+        "putchar.c",
+    ],
+    hdrs = ["putchar.h"],
 )

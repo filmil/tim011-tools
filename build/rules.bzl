@@ -1,8 +1,8 @@
 MesccInfo = provider(
     doc = "Information on how to invoke the mscc compiler for CP/M",
     fields = [
-       "compiler",
-       "deps",
+        "compiler",
+        "deps",
     ],
 )
 
@@ -12,7 +12,8 @@ def _mescc_binary_impl(ctx):
     out_file = ctx.actions.declare_file(out_name)
     compiler = info.compiler.files.to_list()[1]
     runfiles_inputs, _, input_manifests = ctx.resolve_command(
-         tools = [info.compiler])
+        tools = [info.compiler],
+    )
     source = ctx.attr.srcs[0].files.to_list()[0]
     deps = []
     include_files = []
@@ -21,20 +22,20 @@ def _mescc_binary_impl(ctx):
             deps += [file]
             include_files += [file.path]
     ctx.actions.run(
-      mnemonic = "MESCC",
-      outputs = [out_file],
-      inputs = runfiles_inputs + [source] + deps,
-      executable = compiler,
-      input_manifests = input_manifests,
-      arguments = [
-        "--source-file={}".format(source.basename),
-        "--source-path={}".format(source.path),
-        "--include-files={}".format(",".join(include_files)),
-        "--out-file={}".format(out_file.path),
-      ],
+        mnemonic = "MESCC",
+        outputs = [out_file],
+        inputs = runfiles_inputs + [source] + deps,
+        executable = compiler,
+        input_manifests = input_manifests,
+        arguments = [
+            "--source-file={}".format(source.basename),
+            "--source-path={}".format(source.path),
+            "--include-files={}".format(",".join(include_files)),
+            "--out-file={}".format(out_file.path),
+        ],
     )
     return [
-        DefaultInfo(files=depset([out_file])),
+        DefaultInfo(files = depset([out_file])),
     ]
 
 mescc_binary = rule(

@@ -1,14 +1,13 @@
 load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_c_library")
 
 sdcc_z180_c_binary(
-  name = "hello_bin",
-  srcs = ["hello.c"],
-  deps = [ ":lib", ],
+    name = "hello_bin",
+    srcs = ["hello.c"],
+    deps = [":lib"],
 )
 
-
 sdcc_z180_c_library(
-  name = "lib",
-  srcs = ["putchar.c"],
-  hdrs = ["putchar.h"],
+    name = "lib",
+    srcs = ["putchar.c"],
+    hdrs = ["putchar.h"],
 )

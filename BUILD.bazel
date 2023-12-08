@@ -1,2 +1,7 @@
 # This rule just shows how you can invoke a binary from an external
 # repo.
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+
+buildifier(
+    name = "buildifier",
+)

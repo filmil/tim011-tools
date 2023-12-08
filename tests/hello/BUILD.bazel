@@ -1,18 +1,18 @@
-load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl", "sdcc_z180_asm_library", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
 
 sdcc_z180_c_binary(
-  name = "hello",
-  srcs = ["hello.c"],
-  deps = [
-    "//tests/hello/putchar",
-    # This binary links assembly code!
-    ":dot",
-  ]
+    name = "hello",
+    srcs = ["hello.c"],
+    deps = [
+        "//tests/hello/putchar",
+        # This binary links assembly code!
+        ":dot",
+    ],
 )
 
 sdcc_z180_asm_library(
-  name = "dot",
-  srcs = ["dot.s"],
+    name = "dot",
+    srcs = ["dot.s"],
 )
 
 # Run this target using:
@@ -20,5 +20,5 @@ sdcc_z180_asm_library(
 #   bazel run //tests/hello:emu
 sdcc_z180_cpm_emu_run(
     name = "emu",
-    binary=":hello",
+    binary = ":hello",
 )

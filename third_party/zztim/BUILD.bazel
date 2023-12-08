@@ -1,61 +1,60 @@
 load(
     "@pypi//:requirements.bzl",
-    "requirement",
     "data_requirement",
     "dist_info_requirement",
     "entry_point",
+    "requirement",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 # bazel run //third_party/zztim:timtile -- -h
 py_binary(
-  name = "timtile",
-  srcs = ["@zztim//:timtile"],
-  deps = [
-          requirement("pypng"),
-  ]
+    name = "timtile",
+    srcs = ["@zztim//:timtile"],
+    deps = [
+        requirement("pypng"),
+    ],
 )
 
 # bazel run //third_party/zztim:timpng -- -h
 py_binary(
-  name = "timpng",
-  srcs = ["@zztim//:timpng"],
-  deps = [
-          requirement("pypng"),
-  ]
+    name = "timpng",
+    srcs = ["@zztim//:timpng"],
+    deps = [
+        requirement("pypng"),
+    ],
 )
 
 # bazel run //third_party/zztim:timfont8 -- -h
 py_binary(
-  name = "timfont8",
-  srcs = ["@zztim//:timfont8"],
-  deps = [
-          requirement("pypng"),
-  ]
+    name = "timfont8",
+    srcs = ["@zztim//:timfont8"],
+    deps = [
+        requirement("pypng"),
+    ],
 )
 
 # bazel run //third_party/zztim:timfont -- -h
 py_binary(
-  name = "timfont",
-  srcs = ["@zztim//:timfont"],
-  deps = [
-          requirement("pypng"),
-  ]
+    name = "timfont",
+    srcs = ["@zztim//:timfont"],
+    deps = [
+        requirement("pypng"),
+    ],
 )
 
 # bazel run //third_party/zztim:timdisk
 sh_binary(
-		name = "timdisk",
-		srcs = [ "@zztim//:timdisk.sh", ],
-		data = [
-				"@cpmtools//:cpmls",
-				"@cpmtools//:cpmcp",
-		],
-        # This is only set when the binary is run using `bazel run`.
-		env = {
-				"CPMLS": "$(location @cpmtools//:cpmls)",
-				"CPMCP": "$(location @cpmtools//:cpmcp)",
-		},
+    name = "timdisk",
+    srcs = ["@zztim//:timdisk.sh"],
+    data = [
+        "@cpmtools//:cpmcp",
+        "@cpmtools//:cpmls",
+    ],
+    # This is only set when the binary is run using `bazel run`.
+    env = {
+        "CPMLS": "$(location @cpmtools//:cpmls)",
+        "CPMCP": "$(location @cpmtools//:cpmcp)",
+    },
 )
-

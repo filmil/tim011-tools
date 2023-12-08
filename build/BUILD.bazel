@@ -12,7 +12,7 @@ mescc_toolchain(
         "@mescc//:cpm_binaries",
         "//CPMEmulator:cpm",
         # Flags processing
-        "@gotopt2//cmd/gotopt2:gotopt2",
+        "@gotopt2//cmd/gotopt2",
         "@bazel_tools//tools/bash/runfiles",
     ],
 )
@@ -32,53 +32,53 @@ toolchain(
 )
 
 sh_binary(
-  name = "mescc_compiler",
-  visibility = ["//visibility:public"],
-  srcs = ["mescc.sh"],
-  data = [
-    "@mescc//:cc.com",
-    "@mescc//:HEXTOCOM.COM",
-    "@mescc//:ZSM.COM",
-    "@mescc//:libs",
-    "@mescc//:includes",
-    "@mescc//:cpm_binaries",
-    "//CPMEmulator:cpm",
-    # Flags processing
-    "@gotopt2//cmd/gotopt2:gotopt2",
-  ],
-  deps = [
-    # To detect the runfiles dir.
-    "@bazel_tools//tools/bash/runfiles",
-  ],
+    name = "mescc_compiler",
+    srcs = ["mescc.sh"],
+    data = [
+        "@mescc//:cc.com",
+        "@mescc//:HEXTOCOM.COM",
+        "@mescc//:ZSM.COM",
+        "@mescc//:libs",
+        "@mescc//:includes",
+        "@mescc//:cpm_binaries",
+        "//CPMEmulator:cpm",
+        # Flags processing
+        "@gotopt2//cmd/gotopt2",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # To detect the runfiles dir.
+        "@bazel_tools//tools/bash/runfiles",
+    ],
 )
 
 sh_binary(
-  name = "cpmrun",
-  visibility = ["//visibility:public"],
-  srcs = ["cpmrun.sh"],
-  data = [
-    "//CPMEmulator:cpm",
-    # Flags processing
-    "@gotopt2//cmd/gotopt2:gotopt2",
-  ],
-  deps = [
-    # To detect the runfiles dir.
-    "@bazel_tools//tools/bash/runfiles",
-  ],
+    name = "cpmrun",
+    srcs = ["cpmrun.sh"],
+    data = [
+        "//CPMEmulator:cpm",
+        # Flags processing
+        "@gotopt2//cmd/gotopt2",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # To detect the runfiles dir.
+        "@bazel_tools//tools/bash/runfiles",
+    ],
 )
 
 # gen_runner generates a runner script for a CP/M binary.
 sh_binary(
-  name = "gen_runner",
-  visibility = ["//visibility:public"],
-  srcs = ["gen_runner.sh"],
-  data = [
-    "@gotopt2//cmd/gotopt2:gotopt2",
-  ],
-  deps = [
-    # To detect the runfiles dir.
-    "@bazel_tools//tools/bash/runfiles",
-  ],
+    name = "gen_runner",
+    srcs = ["gen_runner.sh"],
+    data = [
+        "@gotopt2//cmd/gotopt2",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # To detect the runfiles dir.
+        "@bazel_tools//tools/bash/runfiles",
+    ],
 )
 
 # SDCC toolchain definition
@@ -90,15 +90,15 @@ sdcc_z180_toolchain(
     assembler = "@sdcc-linux//:bin/sdasz80",
     compiler = "@sdcc-linux//:bin/sdcc",
     hextocom = "//third_party/hextocom",
+    includes = "@sdcc-linux//:includes_z180",
     librarian = "@sdcc-linux//:bin/sdar",
+    libs = "@sdcc-linux//:libs_z180",
     linker = "@sdcc-linux//:bin/sdldz80",
     preprocessor = "@sdcc-linux//:bin/sdcpp",
-    libs = "@sdcc-linux//:libs_z180",
-    includes = "@sdcc-linux//:includes_z180",
     # Might need includes and libs.
     deps = [
-        "@sdcc-linux//:libs_z180",
         "@sdcc-linux//:includes_z180",
+        "@sdcc-linux//:libs_z180",
     ],
 )
 

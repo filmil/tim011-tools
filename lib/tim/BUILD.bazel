@@ -1,22 +1,22 @@
-load("//build:sdcc.bzl",  "sdcc_z180_c_binary", "sdcc_z180_c_library", "sdcc_z180_asm_library", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl", "sdcc_z180_asm_library", "sdcc_z180_c_binary", "sdcc_z180_c_library", "sdcc_z180_cpm_emu_run")
 
-package(default_visibility=["//visibility:public"])
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "timprint",
     srcs = [
         "timprint.lib",
-    ]
+    ],
 )
 
 sdcc_z180_asm_library(
     name = "tim_print_asm",
-    srcs = [ "timprint.S" ],
+    srcs = ["timprint.S"],
 )
 
 sdcc_z180_c_library(
     name = "tim_print_lib",
-    hdrs = [ "timprint.h" ],
+    hdrs = ["timprint.h"],
     deps = [
         ":tim_print_asm",
     ],
@@ -24,13 +24,13 @@ sdcc_z180_c_library(
 
 sdcc_z180_asm_library(
     name = "tim_graph_asm",
-    srcs = [ "timgraph.S" ],
+    srcs = ["timgraph.S"],
 )
 
 sdcc_z180_c_library(
     name = "tim_graph_lib",
-    srcs = [ "timgraph.c"],
-    hdrs = [ "timgraph.h" ],
+    srcs = ["timgraph.c"],
+    hdrs = ["timgraph.h"],
     deps = [
         ":tim_graph_asm",
     ],

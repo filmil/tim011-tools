@@ -4,8 +4,7 @@ register_toolchains(
     "//build:mescc_linux_toolchain",
 )
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository", "git_repository")
-
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -28,12 +27,12 @@ http_archive(
 
 http_archive(
     name = "sdcc-linux",
+    build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
+    strip_prefix = "sdcc-4.3.0",
     type = "tar.bz2",
     urls = [
         "https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.3.0/sdcc-4.3.0-amd64-unknown-linux2.5.tar.bz2/download",
     ],
-    strip_prefix = "sdcc-4.3.0",
-    build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
 )
 
 register_toolchains(
@@ -50,66 +49,68 @@ go_register_toolchains(version = "1.16")
 gazelle_dependencies()
 
 new_git_repository(
-  name = "mescc",
-  remote = "https://github.com/MiguelVis/mescc",
-  commit = "762ac3ba1c020352223831bc9faf26d57ecb5b8a",
-  build_file = "//third_party/mescc:BUILD.bazel.mescc",
-  shallow_since = "1610562846 +0100",
+    name = "mescc",
+    build_file = "//third_party/mescc:BUILD.bazel.mescc",
+    commit = "762ac3ba1c020352223831bc9faf26d57ecb5b8a",
+    remote = "https://github.com/MiguelVis/mescc",
+    shallow_since = "1610562846 +0100",
 )
 
 git_repository(
     name = "bazel_bats",
-    remote = "https://github.com/filmil/bazel-bats",
     commit = "78da0822ea339bd0292b5cc0b5de6930d91b3254",
+    remote = "https://github.com/filmil/bazel-bats",
     shallow_since = "1569564445 -0700",
 )
 
 git_repository(
     name = "gotopt2",
-    remote = "https://github.com/filmil/gotopt2",
     commit = "6eeeeb74c6dcd1a94a0daccccbda09b3ba7b2e51",
+    remote = "https://github.com/filmil/gotopt2",
     shallow_since = "1593765180 -0700",
 )
 
 load("@gotopt2//build:deps.bzl", "gotopt2_dependencies")
+
 gotopt2_dependencies()
 
 http_archive(
     name = "cpmtools",
-    type = ".tar.gz",
-    urls = [
-        "http://www.moria.de/~michael/cpmtools/files/cpmtools-2.23.tar.gz",
+    build_file = "//third_party/cpmtools:BUILD.bazel.cpmtools",
+    patch_args = ["-p1"],
+    patches = [
+        "//third_party/cpmtools:0001-fix-patch-diskdefs-for-tim011.patch",
     ],
     sha256 = "7839b19ac15ba554e1a1fc1dbe898f62cf2fd4db3dcdc126515facc6b929746f",
     strip_prefix = "cpmtools-2.23",
-    build_file = "//third_party/cpmtools:BUILD.bazel.cpmtools",
-    patch_args = [ "-p1" ],
-    patches = [
-        "//third_party/cpmtools:0001-fix-patch-diskdefs-for-tim011.patch",
+    type = ".tar.gz",
+    urls = [
+        "http://www.moria.de/~michael/cpmtools/files/cpmtools-2.23.tar.gz",
     ],
 )
 
 http_archive(
     name = "rules_foreign_cc",
+    sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
     strip_prefix = "rules_foreign_cc-0.9.0",
     url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.9.0.tar.gz",
-    sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
 )
+
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
 rules_foreign_cc_dependencies()
 
 new_git_repository(
-  name = "zztim",
-  remote = "https://bitbucket.org/zzarko/tim011-tools",
-  commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
-  build_file = "//third_party/zztim:BUILD.bazel.zztim",
-  shallow_since = "1656647455 +0000",
-  patch_args = [ "-p1" ],
-  patches = [
+    name = "zztim",
+    build_file = "//third_party/zztim:BUILD.bazel.zztim",
+    commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
+    patch_args = ["-p1"],
+    patches = [
         "//third_party/zztim:0001-fix-patch-for-bazel.patch",
-  ],
+    ],
+    remote = "https://bitbucket.org/zzarko/tim011-tools",
+    shallow_since = "1656647455 +0000",
 )
-
 
 # Hermetic Python.
 
@@ -117,9 +118,9 @@ rules_python_version = "93f5ea2f01ce7eb870d3ad3943eda5d354cdaac5"
 
 http_archive(
     name = "rules_python",
+    sha256 = "179541b519e8fd7c8fbfd0d2a2a51835cf7c83bd6a8f0f3fd599a0910d1a0981",
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
-    sha256 = "179541b519e8fd7c8fbfd0d2a2a51835cf7c83bd6a8f0f3fd599a0910d1a0981"
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
@@ -132,15 +133,38 @@ python_register_toolchains(
 )
 
 load("@python3_9//:defs.bzl", "interpreter")
-
-load("@rules_python//python:pip.bzl", "pip_parse", "pip_install")
+load("@rules_python//python:pip.bzl", "pip_install", "pip_parse")
 
 pip_parse(
-   name = "pypi",
-   requirements_lock = "//third_party:requirements_lock.txt",
-   python_interpreter_target = interpreter,
+    name = "pypi",
+    python_interpreter_target = interpreter,
+    requirements_lock = "//third_party:requirements_lock.txt",
 )
 
 load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()
+
+# Build tools.
+
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
+    strip_prefix = "protobuf-3.19.4",
+    urls = [
+        "https://github.com/protocolbuffers/protobuf/archive/v3.19.4.tar.gz",
+    ],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+http_archive(
+    name = "com_github_bazelbuild_buildtools",
+    sha256 = "ae34c344514e08c23e90da0e2d6cb700fcd28e80c02e23e4d5715dddcb42f7b3",
+    strip_prefix = "buildtools-4.2.2",
+    urls = [
+        "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
+    ],
+)

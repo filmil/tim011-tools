@@ -1,17 +1,17 @@
 SdccInfo = provider(
-  doc = "Information on how to invoke the SDCC compiler for CPM",
-  fields = [
-    "assembler",
-    "compiler",
-    "crt0",
-    "deps",
-    "hextocom",
-    "includes",
-    "librarian",
-    "libs",
-    "linker",
-    "preprocessor",
-  ],
+    doc = "Information on how to invoke the SDCC compiler for CPM",
+    fields = [
+        "assembler",
+        "compiler",
+        "crt0",
+        "deps",
+        "hextocom",
+        "includes",
+        "librarian",
+        "libs",
+        "linker",
+        "preprocessor",
+    ],
 )
 
 SdccHeaders = provider(
@@ -25,18 +25,19 @@ CPMBinary = provider(
 )
 
 _SDCC_OPTIONS = [
-  "-mz180",
-  # 16-bit I/O space of the HD64180
-  "--codeseg", "CODE",
-  "--dataseg", "CODE",
-  "--constseg", "CODE",
+    "-mz180",
+    # 16-bit I/O space of the HD64180
+    "--codeseg",
+    "CODE",
+    "--dataseg",
+    "CODE",
+    "--constseg",
+    "CODE",
 ]
-
 
 # Declare all the interesting files that sdcc produces.
 def declare_sdcc_extensions(declare_file_action, label_name, extensions):
     return [declare_file_action("{}.{}".format(label_name, extension)) for extension in extensions]
-
 
 def resolve_command(ctx, info):
     runfiles_inputs, _, input_manifests = ctx.resolve_command(
@@ -47,21 +48,18 @@ def resolve_command(ctx, info):
             info.assembler,
             info.linker,
             info.librarian,
-       ])
+        ],
+    )
     return (runfiles_inputs, input_manifests)
-
 
 def get_compiler(info):
     return info.compiler.files.to_list()[0]
 
-
 def get_assembler(info):
     return info.assembler.files.to_list()[0]
 
-
 def get_librarian(info):
     return info.librarian.files.to_list()[0]
-
 
 def get_lib_args(libs):
     dirs = []
@@ -75,7 +73,6 @@ def get_lib_args(libs):
         lib_args += ["-l", basename]
     return lib_args
 
-
 def get_incl_args(incls):
     dirs = []
     incl_args = ["-I", "."]
@@ -85,7 +82,6 @@ def get_incl_args(incls):
             incl_args += ["-I", dirname]
             dirs += [dirname]
     return incl_args
-
 
 # Extracts all headers from the dependencies, and the .rel files to use with
 # the linker.
@@ -104,10 +100,8 @@ def dep_and_rel(deps):
         rel_files += sdcc_headers.rels.to_list()
     return (dep_headers, rel_files)
 
-
 def get_sdcc_info(ctx):
     return ctx.toolchains["//build:toolchain_type_sdcc_z180"].sdccinfo
-
 
 def get_declared_headers(ctx):
     declared_headers = []
@@ -116,14 +110,12 @@ def get_declared_headers(ctx):
         declared_headers += files
     return declared_headers
 
-
 def get_source_files(ctx):
     source_files = []
     for source in ctx.attr.srcs:
         files = source.files.to_list()
         source_files += files
     return source_files
-
 
 def _sdcc_z180_c_library_impl(ctx):
     info = get_sdcc_info(ctx)
@@ -156,17 +148,20 @@ def _sdcc_z180_c_library_impl(ctx):
             "-c",
             "-o",
             single_rel_file.path,
-            source_file.path]
+            source_file.path,
+        ]
         ctx.actions.run(
             mnemonic = "SDCC",
             outputs = [single_rel_file] + declare_sdcc_extensions(
-                ctx.actions.declare_file, source_file.basename,
-                ["rel", "sym", "asm", "lst"]),
+                ctx.actions.declare_file,
+                source_file.basename,
+                ["rel", "sym", "asm", "lst"],
+            ),
             inputs = (runfiles_inputs + [source_file] + declared_headers + libs.files.to_list() +
-                includes.files.to_list()),
+                      includes.files.to_list()),
             executable = compiler,
             input_manifests = input_manifests,
-            arguments = all_args
+            arguments = all_args,
         )
 
     # Create a library.
@@ -184,8 +179,8 @@ def _sdcc_z180_c_library_impl(ctx):
     )
 
     return [
-        DefaultInfo(files=depset(all_rel_files + [lib_file])),
-        SdccHeaders(headers=depset(declared_headers), rels=depset([lib_file]))
+        DefaultInfo(files = depset(all_rel_files + [lib_file])),
+        SdccHeaders(headers = depset(declared_headers), rels = depset([lib_file])),
     ]
 
 sdcc_z180_c_library = rule(
@@ -197,7 +192,7 @@ sdcc_z180_c_library = rule(
         "hdrs": attr.label_list(allow_files = True),
         "deps": attr.label_list(),
     },
-    toolchains = [ "//build:toolchain_type_sdcc_z180"]
+    toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
 
 def _sdcc_z180_c_binary_impl(ctx):
@@ -206,9 +201,11 @@ def _sdcc_z180_c_binary_impl(ctx):
     out_name = "{}".format(ihx_file.path)
     compiler = get_compiler(info)
     runfiles_inputs, input_manifests = resolve_command(ctx, info)
+
     # Add libs and library flags
     libs = info.libs
     lib_args = get_lib_args(info.libs)
+
     # Add all needed include flags.
     includes = info.includes
     incl_args = get_incl_args(includes)
@@ -226,21 +223,23 @@ def _sdcc_z180_c_binary_impl(ctx):
     source_files += dep_rel_files
     sources = [file.path for file in source_files]
     all_args = _SDCC_OPTIONS + [
-          "--no-std-crt0",
+        "--no-std-crt0",
     ] + lib_args + incl_args + [
-          "-o",
-          out_name,
+        "-o",
+        out_name,
     ] + sources
     ctx.actions.run(
         mnemonic = "SDCC",
         outputs = [ihx_file] + declare_sdcc_extensions(
-            ctx.actions.declare_file, ctx.label.name,
-            ["rel", "sym", "asm", "lst", "map", "lk", "noi"]),
+            ctx.actions.declare_file,
+            ctx.label.name,
+            ["rel", "sym", "asm", "lst", "map", "lk", "noi"],
+        ),
         inputs = (runfiles_inputs +
-            source_files +
-            dep_headers +
-            libs.files.to_list() +
-            includes.files.to_list()),
+                  source_files +
+                  dep_headers +
+                  libs.files.to_list() +
+                  includes.files.to_list()),
         executable = compiler,
         input_manifests = input_manifests,
         arguments = all_args,
@@ -254,13 +253,13 @@ def _sdcc_z180_c_binary_impl(ctx):
         inputs = [ihx_file],
         executable = hextocom,
         arguments = [
-          ihx_file.path,
-          com_file.path,
+            ihx_file.path,
+            com_file.path,
         ],
     )
     return [
-        DefaultInfo(files=depset(outputs)),
-        CPMBinary(binary=com_file),
+        DefaultInfo(files = depset(outputs)),
+        CPMBinary(binary = com_file),
     ]
 
 sdcc_z180_c_binary = rule(
@@ -270,7 +269,7 @@ sdcc_z180_c_binary = rule(
         "deps": attr.label_list(),
         "_crt0": attr.label(default = Label("//third_party/cpm")),
     },
-    toolchains = [ "//build:toolchain_type_sdcc_z180"]
+    toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
 
 def _sdcc_z180_asm_library_impl(ctx):
@@ -281,24 +280,26 @@ def _sdcc_z180_asm_library_impl(ctx):
         single_rel_file = ctx.actions.declare_file("{}.rel".format(source_file.basename))
         all_rel_files += [single_rel_file]
         all_args = [
-            "-l", # generate lst file
-            "-o", # generate object (rel) file
-            "-s", # generate symbol (sym) file
+            "-l",  # generate lst file
+            "-o",  # generate object (rel) file
+            "-s",  # generate symbol (sym) file
             single_rel_file.path,
             source_file.path,
         ]
         ctx.actions.run(
             mnemonic = "ZASM",
             outputs = [single_rel_file] + declare_sdcc_extensions(
-                ctx.actions.declare_file, source_file.basename,
-                ["sym", "lst"]),
+                ctx.actions.declare_file,
+                source_file.basename,
+                ["sym", "lst"],
+            ),
             inputs = [source_file],
             executable = get_assembler(info),
             arguments = all_args,
         )
     return [
-        DefaultInfo(files=depset(all_rel_files)),
-        SdccHeaders(headers=depset([]), rels=depset(all_rel_files))
+        DefaultInfo(files = depset(all_rel_files)),
+        SdccHeaders(headers = depset([]), rels = depset(all_rel_files)),
     ]
 
 sdcc_z180_asm_library = rule(
@@ -306,7 +307,7 @@ sdcc_z180_asm_library = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
     },
-    toolchains = [ "//build:toolchain_type_sdcc_z180"]
+    toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
 
 def _sdcc_z180_toolchain_impl(ctx):
@@ -320,58 +321,58 @@ def _sdcc_z180_toolchain_impl(ctx):
             libs = ctx.attr.libs,
             includes = ctx.attr.includes,
             librarian = ctx.attr.librarian,
-        )
+        ),
     )
     return [toolchain_info]
 
 sdcc_z180_toolchain = rule(
-  implementation = _sdcc_z180_toolchain_impl,
-  attrs = {
-    "compiler": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = True,
-    ),
-    "linker": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = True,
-    ),
-    "assembler": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = True,
-    ),
-    "librarian": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = True,
-    ),
-    "preprocessor": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = True,
-    ),
-    "hextocom": attr.label(
-      cfg = "host",
-      executable = True,
-    ),
-    "libs": attr.label(
-      cfg = "host",
-    ),
-    "includes": attr.label(
-      cfg = "host",
-    ),
-    "crt0": attr.label(
-      allow_files = True,
-      cfg = "host",
-      executable = False,
-    ),
-    "deps": attr.label_list(),
-  },
+    implementation = _sdcc_z180_toolchain_impl,
+    attrs = {
+        "compiler": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "linker": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "assembler": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "librarian": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "preprocessor": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "hextocom": attr.label(
+            cfg = "host",
+            executable = True,
+        ),
+        "libs": attr.label(
+            cfg = "host",
+        ),
+        "includes": attr.label(
+            cfg = "host",
+        ),
+        "crt0": attr.label(
+            allow_files = True,
+            cfg = "host",
+            executable = False,
+        ),
+        "deps": attr.label_list(),
+    },
 )
 
-def sdcc_z180_cpm_emu_run(name, binary, visibility=None):
+def sdcc_z180_cpm_emu_run(name, binary, visibility = None):
     script_name = name + ".sh"
     ggen_name = name + "_gen"
     native.genrule(
@@ -381,7 +382,7 @@ def sdcc_z180_cpm_emu_run(name, binary, visibility=None):
             --script=$@ \
             --runner=$(location //CPMEmulator:cpm) \
             --cpm-binary=$(location {binary})
-        """.format(script=script_name, binary=binary),
+        """.format(script = script_name, binary = binary),
         outs = [script_name],
         tools = [
             "//build:cpmrun",
@@ -393,14 +394,14 @@ def sdcc_z180_cpm_emu_run(name, binary, visibility=None):
     )
     native.sh_binary(
         name = name,
-        srcs = [ script_name ],
+        srcs = [script_name],
         data = [
-          ":{}".format(ggen_name),
-          "//CPMEmulator:cpm",
+            ":{}".format(ggen_name),
+            "//CPMEmulator:cpm",
         ],
         deps = [
-          # To detect the runfiles dir.
-          "@bazel_tools//tools/bash/runfiles",
+            # To detect the runfiles dir.
+            "@bazel_tools//tools/bash/runfiles",
         ],
         visibility = visibility,
     )
