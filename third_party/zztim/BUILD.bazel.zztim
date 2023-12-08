@@ -1,14 +1,24 @@
-#
+package(default_visibility = ["//visibility:public"])
 
-sh_binary(
-		name = "timdisk",
-		srcs = [ "timdisk.sh", ],
-		data = [
-				"@cpmtools//:cpmls",
-				"@cpmtools//:cpmcp",
-		],
-		env = {
-				"CPMLS": "$(location @cpmtools//:cpmls)",
-				"CPMCP": "$(location @cpmtools//:cpmcp)",
-		},
+exports_files(["**.py", "timdisk.sh"])
+
+filegroup(
+	name = "timtile",
+	srcs = [ "timtile.py", ],
 )
+
+filegroup(
+	name = "timfont",
+	srcs = [ "timfont.py", ],
+)
+
+filegroup(
+	name = "timfont8",
+	srcs = [ "timfont8.py", ],
+)
+
+filegroup(
+	name = "timpng",
+	srcs = [ "timpng.py", ],
+)
+
