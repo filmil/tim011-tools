@@ -103,10 +103,44 @@ new_git_repository(
   remote = "https://bitbucket.org/zzarko/tim011-tools",
   commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
   build_file = "//third_party/zztim:BUILD.bazel.zztim",
-  shallow_since = "1610562846 +0100",
+  shallow_since = "1656647455 +0000",
   patch_args = [ "-p1" ],
   patches = [
         "//third_party/zztim:0001-fix-patch-for-bazel.patch",
   ],
 )
 
+
+# Hermetic Python.
+
+rules_python_version = "93f5ea2f01ce7eb870d3ad3943eda5d354cdaac5"
+
+http_archive(
+    name = "rules_python",
+    strip_prefix = "rules_python-{}".format(rules_python_version),
+    url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
+    sha256 = "179541b519e8fd7c8fbfd0d2a2a51835cf7c83bd6a8f0f3fd599a0910d1a0981"
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+py_repositories()
+
+python_register_toolchains(
+    name = "python3_9",
+    python_version = "3.9",
+)
+
+load("@python3_9//:defs.bzl", "interpreter")
+
+load("@rules_python//python:pip.bzl", "pip_parse", "pip_install")
+
+pip_parse(
+   name = "pypi",
+   requirements_lock = "//third_party:requirements_lock.txt",
+   python_interpreter_target = interpreter,
+)
+
+load("@pypi//:requirements.bzl", "install_deps")
+
+install_deps()

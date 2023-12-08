@@ -1,6 +1,8 @@
 _This is a fork of https://bitbucket.org/zzarko/tim011-tools/, the original README
 is way down below._
 
+See maintenance documentation at [docs/maintenance.md].
+
 I was very impressed by zzarko's work on TIM-011 tools, not only because it's a
 very impressive piece of work for a machine that I have fond memories of, but
 also because TIM-011 is very near and dear to my heart, and over time I got
