@@ -67,6 +67,20 @@ sh_binary(
     ],
 )
 
+sh_binary(
+    name = "tim011run",
+    srcs = ["tim011run.sh"],
+    data = [
+        "@gotopt2//cmd/gotopt2",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+filegroup(name="tim011_run_sh", srcs = ["tim011run.sh"], visibility = ["//visibility:public"])
+
 # gen_runner generates a runner script for a CP/M binary.
 sh_binary(
     name = "gen_runner",

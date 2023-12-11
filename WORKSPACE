@@ -168,3 +168,13 @@ http_archive(
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.2.tar.gz",
     ],
 )
+
+
+# MAME emulator for TIM-011
+new_git_repository(
+    name = "mame_docker",
+    build_file = "//third_party/mame-docker:BUILD.bazel.mame-docker",
+    remote = "https://github.com/filmil/mame-docker",
+    commit = "f06cee32d2079f10f826624a3fceb8dc55f09c75",
+)
+

@@ -1,27 +1,38 @@
-From c10851a6cbfe65bd8de448d5a992b9d77209b0bb Mon Sep 17 00:00:00 2001
+From 2237da0047e7b94a35edbd50c4753981d1774037 Mon Sep 17 00:00:00 2001
 From: Filip Filmar <filmil@gmail.com>
 Date: Thu, 7 Dec 2023 07:56:46 +0000
 Subject: [PATCH] fix: patch for bazel
 
 ---
- timdisk.sh | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ timdisk.sh | 40 ++++++++++++++++++++++------------------
+ 1 file changed, 22 insertions(+), 18 deletions(-)
 
 diff --git a/timdisk.sh b/timdisk.sh
-index ff1868c..cf67c11 100755
+index ff1868c..a149d7c 100755
 --- a/timdisk.sh
 +++ b/timdisk.sh
-@@ -16,6 +16,9 @@
+@@ -16,14 +16,18 @@
  #    You should have received a copy of the GNU General Public License
  #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  
 +CPMCP="${CPMCP:-cpmcp}"
 +CPMLS="${CPMLS:-cpmls}"
++FORCE="${FORCE:-0}"
 +
  # constants
  CPMTYPE="tim011"
- DISKDEFS="diskdefs"
-@@ -32,7 +35,7 @@ exec 10<&0
+-DISKDEFS="diskdefs"
++export DISKDEFS="${DISKDEFS:-diskdefs}"  # For patched cpmtools.
+ INPIMG=1
+ INPDIR=2
+ INPLST=3
+ # empty image name
+-EMPTY="empty.img"
++EMPTY="${EMPTY:-empty.img}"
+ 
+ #save keyboard stdin in descriptor 10
+ exec 10<&0
+@@ -32,7 +36,7 @@ exec 10<&0
  function usage {
      colecho "[g]Script for copying files from/to TIM-011 images"
      colecho "[b](C) 2019 Zarko Zivanov, www.onceuponabyte.org"
@@ -30,7 +41,7 @@ index ff1868c..cf67c11 100755
      colecho "\nUsage:"
      colecho "[g]$0[n] [c]-e <image>[n] [m][directory]"
      colecho "   Extracts files from TIM-011 image into directory."
-@@ -145,7 +148,7 @@ while getopts ":he:c:l:t:" opt; do
+@@ -145,7 +149,7 @@ while getopts ":he:c:l:t:" opt; do
          # find user areas in image
          IMG=$OPTARG
          if [ -f "$IMG" ]; then
@@ -39,7 +50,20 @@ index ff1868c..cf67c11 100755
              colecho "[c]Found user areas: [g]$(echo $USERS)"
          else
              error "Image [g]$IMG[r] not found!"
-@@ -231,10 +234,10 @@ case $INPUT in
+@@ -213,9 +217,9 @@ case $INPUT in
+             DIR="$1"
+         fi
+         # check if output directory exists
+-        if [ -e "$DIR" ]; then
+-            if [ -d "$DIR" ]; then
+-                colecho "Directory [g]$DIR[n] alredy exists. Delete its files [[c]y/n[n]]?"
++        if [[ -e "$DIR" && "${FORCE}" != "1" ]]; then
++            if [[ -d "$DIR" ]]; then
++                colecho "Directory [g]$DIR[n] already exists. Delete its files [[c]y/n[n]]?"
+                 read -u 10 -n 1 ans
+                 echo -e -n "\r"
+                 if [ "$ans" != "y" ]; then
+@@ -231,10 +235,10 @@ case $INPUT in
              colecho "Extracting files for user area [g]$user"
              if [ $user != 0 ]; then
                  mkdir -p "$DIR/$user"
@@ -52,7 +76,20 @@ index ff1868c..cf67c11 100755
              fi
          done
          ;;
-@@ -262,18 +265,18 @@ case $INPUT in
+@@ -244,9 +248,9 @@ case $INPUT in
+             IMG="$1"
+         fi
+         # check if output image exists
+-        if [ -e "$IMG" ]; then
+-            if [ -f "$IMG" ]; then
+-                colecho "File [g]$IMG[n] alredy exists. Delete it [[c]y/n[n]]?"
++        if [[ -e "$IMG" && "${FORCE}" != "1" ]]; then
++            if [[ -f "$IMG" ]]; then
++                colecho "File [g]$IMG[n] already exists. Delete it [[c]y/n[n]]?"
+                 read -u 10 -n 1 ans
+                 echo -e -n "\r"
+                 if [ "$ans" != "y" ]; then
+@@ -262,18 +266,18 @@ case $INPUT in
          for user in $USERS; do
              colecho "Copying files for user area [g]$user"
              if [ $user != 0 ]; then
@@ -76,7 +113,7 @@ index ff1868c..cf67c11 100755
          fi
          USER0=""
          # check if "User 0" should be added
-@@ -291,7 +294,7 @@ case $INPUT in
+@@ -291,7 +295,7 @@ case $INPUT in
          OUT=$(sed -E "s/([A-Z0-9][A-Z0-9 ]{8}(SYS|MDL|RCP|Z3T|FCP|IOP))/[m]\1[n]/g" <<< "$OUT")
          colecho "$OUT"
          # display occupied and free space

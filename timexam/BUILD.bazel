@@ -1,5 +1,7 @@
 load("//build:rules.bzl", "mescc_binary")
 load("//build:sdcc.bzl", "sdcc_z180_asm_library", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
+load("//build/tim011-image:rules.bzl", "tim011_disk_image")
+load("//build:macros.bzl", "tim011_emu_run")  # Probably needs reshuffling.
 
 # Something is wrong with this - compilation will hang indefinitely.
 #mescc_binary(
@@ -35,3 +37,19 @@ sdcc_z180_cpm_emu_run(
     name = "emu2",
     binary = ":timexam2",
 )
+
+tim011_disk_image(
+    name = "test_image",
+    # This is the default, you can omit it altogether if you want.
+    base_image = "@mame_docker//:TIM011-Kit.img",
+    binaries = [ ":timexam2" ],
+)
+
+# Disk with the "timexam2" binary added to it.
+# bazel run //timexam:emu
+tim011_emu_run(name="emu", image=":img")
+
+# The original system disk.
+# bazel run //timexam:reference_emu
+tim011_emu_run(name="reference_emu", image="@mame_docker//:TIM011-Kit.img")
+

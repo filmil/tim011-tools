@@ -8,6 +8,8 @@ load(
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
+package(default_visibility = ["//visibility:public"])
+
 # bazel run //third_party/zztim:timtile -- -h
 py_binary(
     name = "timtile",
@@ -56,5 +58,7 @@ sh_binary(
     env = {
         "CPMLS": "$(location @cpmtools//:cpmls)",
         "CPMCP": "$(location @cpmtools//:cpmcp)",
+        # Skip interactive prompting.
+        "FORCE": "1",
     },
 )

@@ -19,6 +19,7 @@ configure_make(
 		"mkfs.cpm", 
   ],
   visibility = ["//visibility:public"],
+  out_data_dirs = [ "cpmtools/share", ],
 )
 
 # TODO: filmil - add a filegroup for each needed file.
@@ -33,5 +34,12 @@ filegroup(
     name = "cpmls",
     srcs = [":cpmtools" ],
     output_group = "cpmls",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "gen_dir",
+    srcs = [":cpmtools" ],
+    output_group = "gen_dir",
     visibility = ["//visibility:public"],
 )

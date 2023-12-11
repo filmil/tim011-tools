@@ -1,6 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["**.py", "timdisk.sh"])
+exports_files([
+		"**.py",
+		"timdisk.sh",
+		"empty.img",
+])
 
 filegroup(
 	name = "timtile",

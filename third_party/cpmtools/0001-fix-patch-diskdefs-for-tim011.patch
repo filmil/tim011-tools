@@ -1,12 +1,28 @@
-From a540f0dce1a0b374e9f77303cbaf99837c0ec898 Mon Sep 17 00:00:00 2001
+From a0bdcb81774e3181685a46a2bfa7d3bdeed9e347 Mon Sep 17 00:00:00 2001
 From: Filip Filmar <filmil@gmail.com>
 Date: Thu, 7 Dec 2023 07:40:31 +0000
 Subject: [PATCH] fix: patch diskdefs for tim011
 
 ---
+ cpmfs.c  |  4 +++-
  diskdefs | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
+diff --git a/cpmfs.c b/cpmfs.c
+index 8193116..8ed4864 100644
+--- a/cpmfs.c
++++ b/cpmfs.c
+@@ -719,7 +719,9 @@ static int diskdefReadSuper(struct cpmSuperBlock *d, char const *format)
+ 
+   d->libdskGeometry[0] = '\0';
+   d->type=0;
+-  if ((fp=fopen("diskdefs","r"))==(FILE*)0 && (fp=fopen(DISKDEFS,"r"))==(FILE*)0)
++  const char* diskdefs_env = getenv("DISKDEFS");
++  if ((fp=fopen("diskdefs","r"))==(FILE*)0 && (fp=fopen(DISKDEFS,"r"))==(FILE*)0
++      && ((diskdefs_env!=0) && (fp=fopen(diskdefs_env,"r"))==(FILE*)0 ))
+   {
+     fprintf(stderr,"%s: Neither `diskdefs' nor `" DISKDEFS "' could be opened.\n",cmd);
+     exit(1);
 diff --git a/diskdefs b/diskdefs
 index aedb733..706eb33 100644
 --- a/diskdefs

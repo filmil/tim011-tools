@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["TIM011-Kit.img"])
+
+filegroup(
+		name = "tim011_kit_img",
+		srcs = [
+				":TIM011-Kit.img",
+		],
+)
+
+filegroup(
+		name = "romdir",
+		srcs = ["tim011"],
+)
