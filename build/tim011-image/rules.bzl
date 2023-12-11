@@ -7,69 +7,33 @@ def _tim011_disk_image(ctx):
     base_image = ctx.attr.base_image.files.to_list()[0]
 
     # tools
-    timdisk = ctx.attr._timdisk.files.to_list()[0]
-    cpmls = ctx.attr._cpmls.files.to_list()[0]
     cpmcp = ctx.attr._cpmcp.files.to_list()[0]
     gen_dir = ctx.attr._gen_dir.files.to_list()[0]
-    empty_img = ctx.attr._empty_img.files.to_list()[0]
-    env = {
-        "CPMLS": cpmls.path,
-        "CPMCP": cpmcp.path,
-        "FORCE": "1",
-        "DISKDEFS": "{}/share/diskdefs".format(gen_dir.path),
-        "EMPTY": base_image.path,
-    }
-
-    image_dir = ctx.actions.declare_directory("{}.tim011.image_dir".format(name))
-
-    # Unpack the base image in a directory.
-    args = ctx.actions.args()
-    args.add_all(["-e", base_image.path, image_dir.path])
-    ctx.actions.run(
-        mnemonic = "TIM011baseimg",
-        executable = timdisk,
-        arguments = [args],
-        outputs = [image_dir],
-        inputs = [base_image, gen_dir, empty_img],
-        tools = [ cpmls, cpmcp],
-        env = env,
-    )
-
-    # Copy the binaries into the directory.
     input_files = []
     for target in ctx.attr.binaries:
         cpm_binary = target[CPMBinary].binary
         input_files += [cpm_binary]
-    tmp_dir = ctx.actions.declare_directory("{}.img_tempdir".format(name))
+
+    final_image = ctx.actions.declare_file("{}.tim011.img".format(name))
+    tmp_dir = ctx.actions.declare_directory("{}.tmp_dir".format(name))
+    diskdefs = "{}/share/diskdefs".format(gen_dir.path)
     ctx.actions.run_shell(
-        mnemonic = "TIM011cpfile",
-        inputs = input_files + [image_dir],
-        outputs = [tmp_dir],
+        mnemonic = "TIM011img",
+        inputs = [base_image, gen_dir] + input_files,
+        outputs = [final_image, tmp_dir],
+        tools = [cpmcp],
         command = """ \
-            cp -R --dereference {image_dir}/* {destination} || : ;  \
-            cp --dereference {source} {destination} || :
+            cp {base_image} {tmp_dir}/temp.img \
+            && env DISKDEFS="{diskdefs}" {cpmcp} -f tim011 {tmp_dir}/temp.img {files} 0: \
+            && cp {tmp_dir}/temp.img {output_file} \
         """.format(
-            source = " ".join([f.path for f in input_files]),
-            destination = tmp_dir.path,
-            image_dir = image_dir.path,
+            base_image = base_image.path,
+            tmp_dir = tmp_dir.path,
+            cpmcp = cpmcp.path,
+            files = " ".join([f.path for f in input_files]),
+            output_file = final_image.path,
+            diskdefs = diskdefs,
         ),
-    )
-
-    # Pack the result into a new image.
-    final_image = ctx.actions.declare_file("{}.img".format(name))
-    args = ctx.actions.args() 
-    args.add_all(["-c", tmp_dir.path, final_image.path])
-
-    # This run requries an actual empty image to operate.
-    #env["EMPTY"]=empty_img.path
-    ctx.actions.run(
-        mnemonic = "TIM011createImg",
-        executable = timdisk,
-        arguments = [args],
-        inputs = [tmp_dir, gen_dir, empty_img, base_image],
-        outputs = [final_image],
-        tools = [cpmls, cpmcp],
-        env = env,
     )
 
     return [
@@ -87,18 +51,6 @@ tim011_disk_image = rule(
         "binaries" : attr.label_list(
             providers = [CPMBinary],
         ),
-        "_timdisk": attr.label(
-            allow_files = True,
-            cfg = "host",
-            executable = True,
-            default = Label("//third_party/zztim:timdisk"),
-        ),
-        "_cpmls": attr.label(
-            allow_files = True,
-            cfg = "host",
-            executable = True,
-            default = Label("@cpmtools//:cpmls"),
-        ),
         "_cpmcp": attr.label(
             allow_files = True,
             cfg = "host",
@@ -109,11 +61,6 @@ tim011_disk_image = rule(
             allow_files = True,
             cfg = "host",
             default = Label("@cpmtools//:gen_dir"),
-        ),
-        "_empty_img": attr.label(
-            allow_files = True,
-            cfg = "host",
-            default = Label("@zztim//:empty.img"),
         ),
     },
 )
