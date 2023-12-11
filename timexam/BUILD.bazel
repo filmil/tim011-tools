@@ -40,14 +40,19 @@ sdcc_z180_cpm_emu_run(
 
 tim011_disk_image(
     name = "test_image",
-    # This is the default, you can omit it altogether if you want.
     base_image = "@mame_docker//:TIM011-Kit.img",
     binaries = [ ":timexam2" ],
 )
 
+tim011_disk_image(
+    name = "test_image2",
+    base_image = "@mame_docker//:TIM011-Kit.img",
+    binaries = [],
+)
+
 # Disk with the "timexam2" binary added to it.
 # bazel run //timexam:emu
-tim011_emu_run(name="emu", image=":img")
+tim011_emu_run(name="emu", image=":test_image")
 
 # The original system disk.
 # bazel run //timexam:reference_emu

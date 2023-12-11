@@ -46,8 +46,8 @@ def _tim011_disk_image(ctx):
         inputs = input_files + [image_dir],
         outputs = [tmp_dir],
         command = """ \
-            cp -R --dereference {image_dir}/* {destination} && \
-            cp --dereference {source} {destination}
+            cp -R --dereference {image_dir}/* {destination} || : ;  \
+            cp --dereference {source} {destination} || :
         """.format(
             source = " ".join([f.path for f in input_files]),
             destination = tmp_dir.path,
@@ -61,12 +61,12 @@ def _tim011_disk_image(ctx):
     args.add_all(["-c", tmp_dir.path, final_image.path])
 
     # This run requries an actual empty image to operate.
-    env["EMPTY"]=empty_img.path
+    #env["EMPTY"]=empty_img.path
     ctx.actions.run(
         mnemonic = "TIM011createImg",
         executable = timdisk,
         arguments = [args],
-        inputs = [tmp_dir, gen_dir, empty_img],
+        inputs = [tmp_dir, gen_dir, empty_img, base_image],
         outputs = [final_image],
         tools = [cpmls, cpmcp],
         env = env,
