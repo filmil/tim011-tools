@@ -15,6 +15,6 @@ def tim011_emu_run(name, image, program="r", romdir="@mame_docker//:romdir"):
         args = [
             "--img-file", "$(location {})".format(image),
             "--rom-directory", "$(location {})".format(romdir),
-            "--program-name", list(program),
+            "--program-name", program,
         ],
     )
