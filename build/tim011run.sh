@@ -34,6 +34,10 @@ flags:
 - name: "rom-directory"
   type: string
   help: "The rom directory to use"
+- name: "program-name"
+  type: string
+  help: "The program to run"
+  default: "r"
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -48,7 +52,7 @@ eval "${GOTOPT2_OUTPUT}"
 readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
 trap "rm -fr ${_tmpdir}" EXIT
 
-CONTAINER_NAME="${CONTAINER_NAME:-mame-docker:latest}"
+CONTAINER_NAME="${CONTAINER_NAME:-filipfilmar/mame-docker:latest}"
 
 cp -R --dereference "${gotopt2_rom_directory}" "${_tmpdir}"
 cp --dereference "${gotopt2_img_file}" "${_tmpdir}"
@@ -67,14 +71,10 @@ fi
     -v "${_tmpdir}:/work:rw" \
     -e DISPLAY="${DISPLAY}" \
     -e HOME="/work" \
+    -e PROGRAM="${gotopt2_program_name}"  \
+    -e IMAGE="$(basename ${gotopt2_img_file})"  \
     --net=host \
     "${CONTAINER_NAME}" \
-    /bin/bash -c \
-      "/prg/tim011 tim011 \
-        -flop1 /work/"$(basename ${gotopt2_img_file})" \
-        -window \
-        -sound none \
-        -rompath /work \
-      "
+    /bin/bash -c "/run.sh"
 )
 
