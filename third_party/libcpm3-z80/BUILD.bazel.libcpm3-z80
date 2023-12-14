@@ -15,6 +15,7 @@ make(
 		" AR=$EXT_BUILD_ROOT/$SDAR" +
 		" CPP=$EXT_BUILD_ROOT/$SDCPP" +
 		" LD=$EXT_BUILD_ROOT/$SDLD" +
+		" ISET=-mz180" +
 		" all",
   ],
   env = {

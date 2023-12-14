@@ -109,10 +109,17 @@ sdcc_z180_toolchain(
     libs = "@sdcc-linux//:libs_z180",
     linker = "@sdcc-linux//:bin/sdldz80",
     preprocessor = "@sdcc-linux//:bin/sdcpp",
+    runtime_libs = [
+        "@libcpm3//:libcpm3",
+        "@libcpm3//:libsdcc",
+    ],
+    crt0 = "@libcpm3//:crt0",
     # Might need includes and libs.
     deps = [
         "@sdcc-linux//:includes_z180",
-        "@sdcc-linux//:libs_z180",
+        #"@sdcc-linux//:libs_z180",
+        "@libcpm3//:libcpm3",
+        "@libcpm3//:libsdcc",
     ],
 )
 

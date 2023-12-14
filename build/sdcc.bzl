@@ -207,6 +207,15 @@ def _sdcc_z180_c_binary_impl(ctx):
     libs = info.libs
     lib_args = get_lib_args(info.libs)
 
+    # Make a list of runtime libraries.
+    runtime_libs_files = []
+    runtime_libs = info.runtime_libs
+    for rtlib_target in runtime_libs:
+        runtime_libs_files += [f for f in rtlib_target.files.to_list()]
+    runtime_libs_flags = []
+    for file in runtime_libs_files:
+        runtime_libs_flags += ["-l", file.path]
+
     # Add all needed include flags.
     includes = info.includes
     incl_args = get_incl_args(includes)
@@ -223,7 +232,7 @@ def _sdcc_z180_c_binary_impl(ctx):
         source_files += files
     source_files += dep_rel_files
     sources = [file.path for file in source_files]
-    all_args = _SDCC_OPTIONS + [
+    all_args = _SDCC_OPTIONS + runtime_libs_flags+ [
         "--no-std-crt0",
     ] + lib_args + incl_args + [
         "-o",
@@ -236,7 +245,7 @@ def _sdcc_z180_c_binary_impl(ctx):
             ctx.label.name,
             ["rel", "sym", "asm", "lst", "map", "lk", "noi"],
         ),
-        inputs = (runfiles_inputs +
+        inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
                   dep_headers +
                   libs.files.to_list() +
@@ -268,7 +277,7 @@ sdcc_z180_c_binary = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(),
-        "_crt0": attr.label(default = Label("//third_party/cpm")),
+        "_crt0": attr.label(default = Label("@libcpm3//:crt0")),
     },
     toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
