@@ -15,6 +15,42 @@ filegroup(
 )
 
 filegroup(
+  name = "sdld",
+  srcs = [
+    "bin/sdldz80",
+  ],
+)
+
+filegroup(
+  name = "sdcpp",
+  srcs = [
+    "bin/sdcpp",
+  ],
+)
+
+filegroup(
+  name = "sdar",
+  srcs = [
+    "bin/sdar",
+  ],
+)
+
+
+filegroup(
+  name = "sdas",
+  srcs = [
+    "bin/sdasz80",
+  ],
+)
+
+filegroup(
+  name = "sdcc",
+  srcs = [
+    "bin/sdcc",
+  ],
+)
+
+filegroup(
     name = "libs_z180",
     srcs = [
         "share/sdcc/lib/z180/z180.lib",

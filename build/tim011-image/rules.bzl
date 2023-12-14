@@ -17,15 +17,23 @@ def _tim011_disk_image(ctx):
     final_image = ctx.actions.declare_file("{}.tim011.img".format(name))
     tmp_dir = ctx.actions.declare_directory("{}.tmp_dir".format(name))
     diskdefs = "{}/share/diskdefs".format(gen_dir.path)
+    cpmcp_cmdline = ""
+    if len(input_files) > 0:
+        cpmcp_cmdline = """&& env DISKDEFS="{diskdefs}" {cpmcp} -f tim011 {tmp_dir}/temp.img {files} 0: """.format(files=" ".join([
+        f.path for f in input_files]), 
+        tmp_dir=tmp_dir.path, 
+        diskdefs=diskdefs,
+        cpmcp=cpmcp.path)
+
     ctx.actions.run_shell(
         mnemonic = "TIM011img",
         inputs = [base_image, gen_dir] + input_files,
         outputs = [final_image, tmp_dir],
         tools = [cpmcp],
         command = """ \
-            cp {base_image} {tmp_dir}/temp.img \
-            && env DISKDEFS="{diskdefs}" {cpmcp} -f tim011 {tmp_dir}/temp.img {files} 0: \
-            && cp {tmp_dir}/temp.img {output_file} \
+            cp --dereference {base_image} {tmp_dir}/temp.img \
+            {cpmcp_cmdline} \
+            && cp --dereference {tmp_dir}/temp.img {output_file} \
         """.format(
             base_image = base_image.path,
             tmp_dir = tmp_dir.path,
@@ -33,6 +41,7 @@ def _tim011_disk_image(ctx):
             files = " ".join([f.path for f in input_files]),
             output_file = final_image.path,
             diskdefs = diskdefs,
+            cpmcp_cmdline=cpmcp_cmdline,
         ),
     )
 

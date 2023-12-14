@@ -1,0 +1,337 @@
+From 5df1562a45cd4656b557bfc9fd21b4c50d771238 Mon Sep 17 00:00:00 2001
+From: Filip Filmar <filmil@gmail.com>
+Date: Thu, 14 Dec 2023 02:49:59 +0000
+Subject: [PATCH] fix: check after defining the binaries
+
+This allows passing specific binaries instead of binaries in $PATH.
+---
+ ...ix-check-after-defining-the-binaries.patch | 236 ++++++++++++++++++
+ Makefile                                      |  41 ++-
+ 2 files changed, 266 insertions(+), 11 deletions(-)
+ create mode 100644 0001-fix-check-after-defining-the-binaries.patch
+
+diff --git a/0001-fix-check-after-defining-the-binaries.patch b/0001-fix-check-after-defining-the-binaries.patch
+new file mode 100644
+index 0000000..56cff7a
+--- /dev/null
++++ b/0001-fix-check-after-defining-the-binaries.patch
+@@ -0,0 +1,236 @@
++From b7517a77af18234a8785f42d0d38a8438cdbcd56 Mon Sep 17 00:00:00 2001
++From: Filip Filmar <filmil@gmail.com>
++Date: Thu, 14 Dec 2023 02:49:59 +0000
++Subject: [PATCH] fix: check after defining the binaries
++
++This allows passing specific binaries instead of binaries in $PATH.
++---
++ ...ix-check-after-defining-the-binaries.patch | 148 ++++++++++++++++++
++ Makefile                                      |  38 +++--
++ 2 files changed, 176 insertions(+), 10 deletions(-)
++ create mode 100644 0001-fix-check-after-defining-the-binaries.patch
++
++diff --git a/0001-fix-check-after-defining-the-binaries.patch b/0001-fix-check-after-defining-the-binaries.patch
++new file mode 100644
++index 0000000..4009d71
++--- /dev/null
+++++ b/0001-fix-check-after-defining-the-binaries.patch
++@@ -0,0 +1,148 @@
+++From 4af1e01856c42e3a4c35eb11d9766118fff13393 Mon Sep 17 00:00:00 2001
+++From: Filip Filmar <filmil@gmail.com>
+++Date: Thu, 14 Dec 2023 02:49:59 +0000
+++Subject: [PATCH] fix: check after defining the binaries
+++
+++This allows passing specific binaries instead of binaries in $PATH.
+++---
+++ ...ix-check-after-defining-the-binaries.patch | 66 +++++++++++++++++++
+++ Makefile                                      | 32 ++++++---
+++ 2 files changed, 88 insertions(+), 10 deletions(-)
+++ create mode 100644 0001-fix-check-after-defining-the-binaries.patch
+++
+++diff --git a/0001-fix-check-after-defining-the-binaries.patch b/0001-fix-check-after-defining-the-binaries.patch
+++new file mode 100644
+++index 0000000..8a84126
+++--- /dev/null
++++++ b/0001-fix-check-after-defining-the-binaries.patch
+++@@ -0,0 +1,66 @@
++++From 131b19bf9d2adaea6ccadc4f7050975a0f0100fe Mon Sep 17 00:00:00 2001
++++From: Filip Filmar <filmil@gmail.com>
++++Date: Thu, 14 Dec 2023 02:49:59 +0000
++++Subject: [PATCH] fix: check after defining the binaries
++++
++++This allows passing specific binaries instead of binaries in $PATH.
++++---
++++ Makefile | 24 ++++++++++++++++--------
++++ 1 file changed, 16 insertions(+), 8 deletions(-)
++++
++++diff --git a/Makefile b/Makefile
++++index 982132d..4080ccb 100644
++++--- a/Makefile
+++++++ b/Makefile
++++@@ -3,11 +3,6 @@ ifneq ($(shell uname), Linux)
++++ $(error OS must be Linux!)
++++ endif
++++ 
++++-# Check if all required tools are on the system.
++++-REQUIRED = sdcc sdar sdasz80
++++-K := $(foreach exec,$(REQUIRED),\
++++-    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
++++-
++++ # Default platform is no platform.
++++ export PLATFORM 	=	
++++ 
++++@@ -28,6 +23,11 @@ export ASFLAGS		=	-xlos -g
++++ export AR			=	sdar
++++ export ARFLAGS		=	-rc
++++ 
+++++# Check if all required tools are on the system.
+++++REQUIRED = ${CC} ${AR} ${AS}
+++++K := $(foreach exec,$(REQUIRED),\
+++++    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+++++
++++ # crt0.s
++++ export CRT0			=	crt0cpm3-z80
++++ 
++++@@ -52,13 +52,21 @@ $(BUILD_DIR):
++++ 
++++ .PHONY: $(SUBDIRS)
++++ $(SUBDIRS):
++++-	$(MAKE) -C $@
+++++	$(MAKE) -C $@ \
+++++		AS=$(AS) \
+++++		CC=$(CC) \
+++++		AR=$(AR)
++++ 
++++ .PHONY: $(SUBMODULES)
++++ $(SUBMODULES):
++++ 	# Pass current build and bin directories.
++++-	$(MAKE) -C $@ BUILD_DIR=$(BUILD_DIR) BIN_DIR=$(BIN_DIR)
+++++	$(MAKE) -C $@ \
+++++		BUILD_DIR=$(BUILD_DIR) \
+++++		BIN_DIR=$(BIN_DIR) \
+++++		AS=$(AS) \
+++++		CC=$(CC) \
+++++		AR=$(AR)
++++ 	
++++ .PHONY: clean
++++ clean:
++++-	rm -f -r $(BUILD_DIR)
+++++	rm -f -r $(BUILD_DIR)
++++-- 
++++2.34.1
++++
+++diff --git a/Makefile b/Makefile
+++index 982132d..96d757d 100644
+++--- a/Makefile
++++++ b/Makefile
+++@@ -3,13 +3,8 @@ ifneq ($(shell uname), Linux)
+++ $(error OS must be Linux!)
+++ endif
+++ 
+++-# Check if all required tools are on the system.
+++-REQUIRED = sdcc sdar sdasz80
+++-K := $(foreach exec,$(REQUIRED),\
+++-    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+++-
+++ # Default platform is no platform.
+++-export PLATFORM 	=	
++++export PLATFORM 	=
+++ 
+++ # Global settings: folders.
+++ export ROOT			=	$(realpath .)
+++@@ -28,6 +23,11 @@ export ASFLAGS		=	-xlos -g
+++ export AR			=	sdar
+++ export ARFLAGS		=	-rc
+++ 
++++# Check if all required tools are on the system.
++++REQUIRED = ${CC} ${AR} ${AS}
++++K := $(foreach exec,$(REQUIRED),\
++++    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
++++
+++ # crt0.s
+++ export CRT0			=	crt0cpm3-z80
+++ 
+++@@ -52,13 +52,25 @@ $(BUILD_DIR):
+++ 
+++ .PHONY: $(SUBDIRS)
+++ $(SUBDIRS):
+++-	$(MAKE) -C $@
++++	$(MAKE) -C $@ \
++++		AS=$(AS) \
++++		CC=$(CC) \
++++		AR=$(AR) \
++++		REQUIRED="$(AS) $(CC) $(AR)"
+++ 
+++ .PHONY: $(SUBMODULES)
+++ $(SUBMODULES):
+++ 	# Pass current build and bin directories.
+++-	$(MAKE) -C $@ BUILD_DIR=$(BUILD_DIR) BIN_DIR=$(BIN_DIR)
+++-	
++++	$(MAKE) -C $@ \
++++		BUILD_DIR=$(BUILD_DIR) \
++++		BIN_DIR=$(BIN_DIR) \
++++		AS=$(AS) \
++++		CC=$(CC) \
++++		AR=$(AR) \
++++		REQUIRED="$(AS) $(CC) $(AR)"
++++
++++
+++ .PHONY: clean
+++ clean:
+++-	rm -f -r $(BUILD_DIR)
++++	rm -f -r $(BUILD_DIR)
++++
+++-- 
+++2.34.1
+++
++diff --git a/Makefile b/Makefile
++index 982132d..a18584b 100644
++--- a/Makefile
+++++ b/Makefile
++@@ -3,13 +3,8 @@ ifneq ($(shell uname), Linux)
++ $(error OS must be Linux!)
++ endif
++ 
++-# Check if all required tools are on the system.
++-REQUIRED = sdcc sdar sdasz80
++-K := $(foreach exec,$(REQUIRED),\
++-    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
++-
++ # Default platform is no platform.
++-export PLATFORM 	=	
+++export PLATFORM 	=
++ 
++ # Global settings: folders.
++ export ROOT			=	$(realpath .)
++@@ -27,6 +22,13 @@ export AS			=	sdasz80
++ export ASFLAGS		=	-xlos -g
++ export AR			=	sdar
++ export ARFLAGS		=	-rc
+++export CPP			=	sdcpp
+++export LD			=	sdldz80
+++
+++# Check if all required tools are on the system.
+++REQUIRED = ${CC} ${AR} ${AS} ${CPP} ${LD}
+++K := $(foreach exec,$(REQUIRED),\
+++    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
++ 
++ # crt0.s
++ export CRT0			=	crt0cpm3-z80
++@@ -52,13 +54,29 @@ $(BUILD_DIR):
++ 
++ .PHONY: $(SUBDIRS)
++ $(SUBDIRS):
++-	$(MAKE) -C $@
+++	$(MAKE) -C $@ \
+++		AS=$(AS) \
+++		CC=$(CC) \
+++		AR=$(AR) \
+++		CPP=$(CPP) \
+++		LD=$(LD) \
+++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)"
++ 
++ .PHONY: $(SUBMODULES)
++ $(SUBMODULES):
++ 	# Pass current build and bin directories.
++-	$(MAKE) -C $@ BUILD_DIR=$(BUILD_DIR) BIN_DIR=$(BIN_DIR)
++-	
+++	$(MAKE) -C $@ \
+++		BUILD_DIR=$(BUILD_DIR) \
+++		BIN_DIR=$(BIN_DIR) \
+++		AS=$(AS) \
+++		CC=$(CC) \
+++		AR=$(AR) \
+++		CPP=$(CPP) \
+++		LD=$(LD) \
+++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)"
+++
+++
++ .PHONY: clean
++ clean:
++-	rm -f -r $(BUILD_DIR)
+++	rm -f -r $(BUILD_DIR)
+++
++-- 
++2.34.1
++
+diff --git a/Makefile b/Makefile
+index 982132d..ce3fefb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,13 +3,8 @@ ifneq ($(shell uname), Linux)
+ $(error OS must be Linux!)
+ endif
+ 
+-# Check if all required tools are on the system.
+-REQUIRED = sdcc sdar sdasz80
+-K := $(foreach exec,$(REQUIRED),\
+-    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+-
+ # Default platform is no platform.
+-export PLATFORM 	=	
++export PLATFORM 	=
+ 
+ # Global settings: folders.
+ export ROOT			=	$(realpath .)
+@@ -27,9 +22,17 @@ export AS			=	sdasz80
+ export ASFLAGS		=	-xlos -g
+ export AR			=	sdar
+ export ARFLAGS		=	-rc
++export CPP			=	sdcpp
++export LD			=	sdldz80
++
++# Check if all required tools are on the system.
++REQUIRED = ${CC} ${AR} ${AS} ${CPP} ${LD}
++K := $(foreach exec,$(REQUIRED),\
++    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+ 
+ # crt0.s
+ export CRT0			=	crt0cpm3-z80
++export CRT0EXT			=	.rel
+ 
+ # Subfolders for make.
+ SUBDIRS 			=	src
+@@ -39,7 +42,7 @@ SUBMODULES 			= 	lib/libsdcc-z80
+ .PHONY: all
+ all:	$(BUILD_DIR) $(SUBMODULES) $(SUBDIRS)
+ 	cp $(BUILD_DIR)/*.lib $(BIN_DIR)
+-	cp $(BUILD_DIR)/$(CRT0).rel $(BIN_DIR)
++	cp $(BUILD_DIR)/$(CRT0).rel $(BIN_DIR)/$(CRT0)$(CRT0EXT)
+ 
+ .PHONY: $(BUILD_DIR)
+ $(BUILD_DIR):
+@@ -52,13 +55,29 @@ $(BUILD_DIR):
+ 
+ .PHONY: $(SUBDIRS)
+ $(SUBDIRS):
+-	$(MAKE) -C $@
++	$(MAKE) -C $@ \
++		AS=$(AS) \
++		CC=$(CC) \
++		AR=$(AR) \
++		CPP=$(CPP) \
++		LD=$(LD) \
++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)"
+ 
+ .PHONY: $(SUBMODULES)
+ $(SUBMODULES):
+ 	# Pass current build and bin directories.
+-	$(MAKE) -C $@ BUILD_DIR=$(BUILD_DIR) BIN_DIR=$(BIN_DIR)
+-	
++	$(MAKE) -C $@ \
++		BUILD_DIR=$(BUILD_DIR) \
++		BIN_DIR=$(BIN_DIR) \
++		AS=$(AS) \
++		CC=$(CC) \
++		AR=$(AR) \
++		CPP=$(CPP) \
++		LD=$(LD) \
++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)"
++
++
+ .PHONY: clean
+ clean:
+-	rm -f -r $(BUILD_DIR)
++	rm -f -r $(BUILD_DIR)
++
+-- 
+2.34.1
+

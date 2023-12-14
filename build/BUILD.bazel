@@ -95,7 +95,7 @@ sh_binary(
     ],
 )
 
-# SDCC toolchain definition
+# SDCC Z180 raw toolchain definition
 
 toolchain_type(name = "toolchain_type_sdcc_z180")
 

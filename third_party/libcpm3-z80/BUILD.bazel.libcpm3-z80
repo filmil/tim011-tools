@@ -1,0 +1,77 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
+make(
+  name = "lib",
+  targets = [
+		" -C $BUILD_TMPDIR" +
+		" BIN_DIR=$$INSTALLDIR$$/lib" +
+        " ROOT=$BUILD_TMPDIR" +
+		" EXT_BUILD_ROOT=$EXT_BUILD_ROOT" +
+		" CC=$EXT_BUILD_ROOT/$SDCC" +
+		" AS=$EXT_BUILD_ROOT/$SDAS" +
+		" AR=$EXT_BUILD_ROOT/$SDAR" +
+		" CPP=$EXT_BUILD_ROOT/$SDCPP" +
+		" LD=$EXT_BUILD_ROOT/$SDLD" +
+		" all",
+  ],
+  env = {
+    "CFLAGS": "",
+    "CXXFLAGS": "",
+    "AR_FLAGS": "",
+    "ARFLAGS": "",
+    "LDFLAGS": "",
+	"SDCC": "$(location @sdcc-linux//:sdcc)",
+	"SDAS": "$(location @sdcc-linux//:sdas)",
+	"SDAR": "$(location @sdcc-linux//:sdar)",
+	"SDCPP": "$(location @sdcc-linux//:sdcpp)",
+	"SDLD": "$(location @sdcc-linux//:sdld)",
+  },
+  install_prefix = "_install",
+  lib_source = ":all_files",
+  out_static_libs = [ 
+		  "libcpm3-z80.lib",
+		  "libsdcc-z80.lib",
+  ],
+  visibility = ["//visibility:public"],
+  build_data = [
+		"@sdcc-linux//:sdar",
+		"@sdcc-linux//:sdas",
+		"@sdcc-linux//:sdcc",
+		"@sdcc-linux//:sdcpp",
+		"@sdcc-linux//:sdld",
+  ]
+)
+
+# Excavates the entire resulting directory.
+filegroup(
+	name = "_crt0_priv",
+	srcs = [":lib" ],
+	output_group = "gen_dir",
+)
+
+genrule(
+	name = "libcpm3",
+	srcs = [":_crt0_priv" ],
+	outs = ["libcpm3-z80.lib"],
+	cmd = "cp $</lib/libcpm3-z80.lib $@",
+	visibility = ["//visibility:public"],
+)
+
+genrule(
+	name = "libsdcc",
+	srcs = [":_crt0_priv" ],
+	outs = ["libsdcc-z80.lib"],
+	cmd = "cp $</lib/libsdcc-z80.lib $@",
+	visibility = ["//visibility:public"],
+)
+
+genrule(
+		name = "crt0",
+		srcs = [ ":_crt0_priv"],
+		outs = [ "crt0cpm3-z80.rel"],
+		cmd = "cp $</lib/crt0cpm3-z80.rel $@",
+		visibility = ["//visibility:public"],
+)

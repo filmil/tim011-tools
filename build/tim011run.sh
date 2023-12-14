@@ -1,6 +1,5 @@
 #! /bin/bash
 
-set -x
 set -eo pipefail
 
 readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -38,6 +37,13 @@ flags:
   type: string
   help: "The program to run"
   default: "r"
+- name: "keep"
+  type: bool
+  default: true
+- name: "tmp-dir"
+  type: string
+  help: "The temporary directory to use - one will be generated if not given"
+  default: ""
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -49,8 +55,14 @@ fi
 eval "${GOTOPT2_OUTPUT}"
 
 # ---
-readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
-trap "rm -fr ${_tmpdir}" EXIT
+_tmpdir="${gotopt2_tmp_dir}"
+if [[ "${_tmpdir}" == "" ]]; then
+  _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
+fi
+
+if [[ "${gotopt2_keep}" != "true" ]]; then
+  trap "rm -fr ${_tmpdir}" EXIT
+fi
 
 CONTAINER_NAME="${CONTAINER_NAME:-filipfilmar/mame-docker:latest}"
 

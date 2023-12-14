@@ -11,6 +11,7 @@ SdccInfo = provider(
         "libs",
         "linker",
         "preprocessor",
+        "runtime_libs",
     ],
 )
 
@@ -321,6 +322,7 @@ def _sdcc_z180_toolchain_impl(ctx):
             libs = ctx.attr.libs,
             includes = ctx.attr.includes,
             librarian = ctx.attr.librarian,
+            runtime_libs = ctx.attr.runtime_libs,
         ),
     )
     return [toolchain_info]
@@ -359,6 +361,11 @@ sdcc_z180_toolchain = rule(
         ),
         "libs": attr.label(
             cfg = "host",
+        ),
+        "runtime_libs": attr.label_list(
+            cfg = "host",
+            allow_files = True,
+            default = [],
         ),
         "includes": attr.label(
             cfg = "host",

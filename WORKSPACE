@@ -178,3 +178,18 @@ new_git_repository(
     commit = "f06cee32d2079f10f826624a3fceb8dc55f09c75",
 )
 
+
+# C runtime library for CPM
+new_git_repository(
+    name = "libcpm3",
+    build_file = "//third_party/libcpm3-z80:BUILD.bazel.libcpm3-z80",
+    remote = "https://github.com/retro-vault/libcpm3-z80",
+    commit = "982aad86671e01f11d5ad8c59dda0312832c1faf",
+    patch_args = ["-p1"],
+    patches = [
+        "//third_party/libcpm3-z80:0001-fix-check-after-defining-the-binaries.patch",
+    ],
+    # for lib/libsdcc-z80
+    init_submodules = True,
+)
+
