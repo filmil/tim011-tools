@@ -1,9 +1,9 @@
 name: Test
 on:
   push:
-    branches: [ bazel-bulid ]
+    branches: [ bazel-build ]
   pull_request:
-    branches: [ bazel-bulid ]
+    branches: [ bazel-build ]
   schedule:
     - cron: "43 7 * * 0"
 concurrency:
