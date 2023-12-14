@@ -1,3 +1,5 @@
+# TIM-011 Tools [![Test status](https://github.com/filmil/tim011-tools/workflows/Test/badge.svg)](https://github.com/filmil/tim011-tools/workflows/Test/badge.svg)
+
 _This is a fork of https://bitbucket.org/zzarko/tim011-tools/, the original README
 is way down below._
 
