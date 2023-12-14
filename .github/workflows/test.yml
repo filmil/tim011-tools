@@ -20,6 +20,8 @@ jobs:
           version: 6.4.0
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Build
+        run: "bazel build //..."
       - name: Test
         run: "bazel test //..."
 
