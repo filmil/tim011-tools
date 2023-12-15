@@ -11,6 +11,7 @@ filegroup(
     "bin/sdcc",
     "bin/sdcpp",
     "bin/sdldz80",
+    "bin/sdobjcopy",
   ],
 )
 
@@ -44,6 +45,13 @@ filegroup(
 )
 
 filegroup(
+  name = "sdobjcopy",
+  srcs = [
+    "bin/sdobjcopy",
+  ],
+)
+
+filegroup(
   name = "sdcc",
   srcs = [
     "bin/sdcc",
@@ -64,3 +72,4 @@ filegroup(
     ] + glob(["share/sdcc/include/*.h"])
       + glob(["share/sdcc/include/asm/z80/*.h"]),
 )
+

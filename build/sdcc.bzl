@@ -6,6 +6,7 @@ SdccInfo = provider(
         "crt0",
         "deps",
         "hextocom",
+        "objcopy",
         "includes",
         "librarian",
         "libs",
@@ -28,12 +29,11 @@ CPMBinary = provider(
 _SDCC_OPTIONS = [
     "-mz180",
     # 16-bit I/O space of the HD64180
-    "--codeseg",
-    "CODE",
-    "--dataseg",
-    "CODE",
-    "--constseg",
-    "CODE",
+    #"--codeseg", "CODE",
+    #"--dataseg", "CODE",
+    #"--constseg", "CODE",
+    "--code-loc", "0x100",
+    "--nostdinc",
 ]
 
 # Declare all the interesting files that sdcc produces.
@@ -49,6 +49,7 @@ def resolve_command(ctx, info):
             info.assembler,
             info.linker,
             info.librarian,
+            info.objcopy,
         ],
     )
     return (runfiles_inputs, input_manifests)
@@ -125,7 +126,11 @@ def _sdcc_z180_c_library_impl(ctx):
 
     # Add libs and library directories
     libs = info.libs
-    lib_args = get_lib_args(libs)
+    lib_args = []
+    libs_files = []
+    if libs:
+        lib_args = get_lib_args(libs)
+        libs_files = lib_args.files.to_list()
 
     # Add all needed include files.
     includes = info.includes
@@ -145,7 +150,9 @@ def _sdcc_z180_c_library_impl(ctx):
         # Compile each file to a .rel individually.
         single_rel_file = ctx.actions.declare_file("{}.rel".format(source_file.basename))
         all_rel_files += [single_rel_file]
-        all_args = _SDCC_OPTIONS + lib_args + incl_args + [
+        all_args = _SDCC_OPTIONS + [
+            "--nostdinc",
+        ] + lib_args + incl_args + [
             "-c",
             "-o",
             single_rel_file.path,
@@ -158,7 +165,7 @@ def _sdcc_z180_c_library_impl(ctx):
                 source_file.basename,
                 ["rel", "sym", "asm", "lst"],
             ),
-            inputs = (runfiles_inputs + [source_file] + declared_headers + libs.files.to_list() +
+            inputs = (runfiles_inputs + [source_file] + declared_headers + libs_files +
                       includes.files.to_list()),
             executable = compiler,
             input_manifests = input_manifests,
@@ -236,8 +243,9 @@ def _sdcc_z180_c_binary_impl(ctx):
         source_files += files
     source_files += dep_rel_files
     sources = [file.path for file in source_files]
-    all_args = _SDCC_OPTIONS + runtime_libs_flags+ [
+    all_args = _SDCC_OPTIONS + runtime_libs_flags + [
         "--no-std-crt0",
+        "--nostdlib",
     ] + lib_args + incl_args + [
         "-o",
         out_name,
@@ -260,13 +268,26 @@ def _sdcc_z180_c_binary_impl(ctx):
     )
     com_file = ctx.actions.declare_file("{}.com".format(ctx.label.name))
     outputs = [com_file]
-    hextocom = info.hextocom.files.to_list()[0]
+    #hextocom = info.hextocom.files.to_list()[0]
+    #ctx.actions.run(
+        #mnemonic = "HEXTOCOM",
+        #outputs = outputs,
+        #inputs = [ihx_file],
+        #executable = hextocom,
+        #arguments = [
+            #ihx_file.path,
+            #com_file.path,
+        #],
+    #)
+    objcopy = info.objcopy.files.to_list()[0]
     ctx.actions.run(
-        mnemonic = "HEXTOCOM",
+        mnemonic = "OBJCOPY",
         outputs = outputs,
         inputs = [ihx_file],
-        executable = hextocom,
+        executable = objcopy,
         arguments = [
+            "-I", "ihex",
+            "-O", "binary",
             ihx_file.path,
             com_file.path,
         ],
@@ -337,6 +358,7 @@ def _sdcc_z180_toolchain_impl(ctx):
             runtime_libs = ctx.attr.runtime_libs,
             deps = ctx.attr.deps,
             crt0 = ctx.attr.crt0,
+            objcopy = ctx.attr.objcopy,
         ),
     )
     return [toolchain_info]
@@ -382,6 +404,9 @@ sdcc_z180_toolchain = rule(
             default = [],
         ),
         "includes": attr.label(
+            cfg = "host",
+        ),
+        "objcopy": attr.label(
             cfg = "host",
         ),
         "crt0": attr.label(

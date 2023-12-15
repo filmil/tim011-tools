@@ -4,7 +4,7 @@ load("//build:macros.bzl", "tim011_emu_run")  # Probably needs reshuffling.
 
 sdcc_z180_c_binary(
     name = "hw",
-    srcs = ["hello_world.c"],
+    srcs = ["main.c"],
 )
 
 tim011_disk_image(

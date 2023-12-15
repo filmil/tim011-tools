@@ -52,9 +52,6 @@ _binary="${gotopt2_cpm_binary}"
 
 cat<<EOF > "${_script}"
 #!/bin/bash
-set -x
-env
-echo genscript:PWD=${PWD}
 RUNNER="\${BUILD_WORKSPACE_DIRECTORY}/${_emulator}"
 BINARY="\${BUILD_WORKSPACE_DIRECTORY}/${_binary}"
 DIR="\$(dirname \$BINARY)"
@@ -62,7 +59,7 @@ DIR="\$(dirname \$BINARY)"
   cd "\${DIR}"
   BASE="\$(basename \$BINARY)"
   BASE_NOEXT="\${BASE%%.*}"
-  "\${RUNNER}" "\${BASE_NOEXT}"
+  "\${RUNNER}" --exec "\${BASE_NOEXT}"
 )
 EOF
 chmod +x "${_script}"

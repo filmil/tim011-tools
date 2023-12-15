@@ -101,18 +101,19 @@ toolchain_type(name = "toolchain_type_sdcc_z180")
 
 sdcc_z180_toolchain(
     name = "sdcc_z180_linux",
-    assembler = "@sdcc-linux//:bin/sdasz80",
-    compiler = "@sdcc-linux//:bin/sdcc",
+    assembler = "@sdcc-linux//:sdas",
+    compiler = "@sdcc-linux//:sdcc",
     hextocom = "//third_party/hextocom",
-    librarian = "@sdcc-linux//:bin/sdar",
-    linker = "@sdcc-linux//:bin/sdldz80",
-    preprocessor = "@sdcc-linux//:bin/sdcpp",
+    librarian = "@sdcc-linux//:sdar",
+    linker = "@sdcc-linux//:sdld",
+    preprocessor = "@sdcc-linux//:sdcpp",
     runtime_libs = [
         "@libcpm3//:libcpm3",
         "@libcpm3//:libsdcc",
     ],
     crt0 = "@libcpm3//:crt0",
     includes = "@libcpm3//:includes",
+    objcopy = "@sdcc-linux//:sdobjcopy",
     deps = [
         "@libcpm3//:libcpm3",
         "@libcpm3//:libsdcc",

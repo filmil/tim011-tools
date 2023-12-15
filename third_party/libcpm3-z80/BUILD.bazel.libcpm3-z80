@@ -73,7 +73,7 @@ genrule(
 genrule(
 		name = "crt0",
 		srcs = [ ":_crt0_priv"],
-		outs = [ "crt0cpm3-z80.rel"],
+		outs = [ "crt0.rel"],
 		cmd = "cp $</lib/crt0cpm3-z80.rel $@",
 		visibility = ["//visibility:public"],
 )
