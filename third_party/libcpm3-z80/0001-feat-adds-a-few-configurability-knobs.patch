@@ -1,0 +1,168 @@
+From e75c777efcf5cfed52fa69d7a359b45fc42d9454 Mon Sep 17 00:00:00 2001
+From: Filip Filmar <filmil@gmail.com>
+Date: Thu, 14 Dec 2023 02:49:59 +0000
+Subject: [PATCH 1/2] feat: adds a few configurability knobs
+
+- Modifies `REQUIRED` to check for binaries pointed to by $(CC),
+  $(AR), $(AS) and friends.
+
+  This allows us to pass in specific binaries that we want to use,
+  instead of expecting `sdcc` tools to be in $PATH. The default behavior
+  is not changed, however, we still by default expect the binaries in
+  $PATH.
+
+  Adds $(CPP) and $(LD) as well, since the `sdcc` binary needs them to
+  be available too.
+
+- Adds an option to configure the installation directory using the `PREFIX`
+  environment variable.
+
+  Adds a new phony target, `install`.
+
+  The two changes above make it possible to do:
+
+  ```
+  make install PREFIX=some_directory
+  ```
+
+  which is a very standard installation approach with makefiles, and
+  make the source integration with other libraries more obvious.
+
+  Default behavior remains unchanged.
+
+- Adds the `$ISET` variable which allows selecting the target
+  instruction set. Useful if you want to compile as `-mz180` for
+  example, since `-mz180` code can not be linked to a `-mz80` library.
+
+  Default behavior remains unchanged.
+
+- Adds the $CRT0EXT variable, that allows you to select the final
+  extension of the CRT0 library.  Works around some systems that are
+  confused by the .rel extension. For example, `bazel` does not allow
+  a library or an object file to have a `.rel` extension. This variable
+  allows an easy workaround.
+
+  Default behavior remains unchanged.
+
+- Forwards all the customizations down to submodules. This allows the
+  submodules to be compiled using the same settings.
+
+  Since the underlying libraries hard-code `sdcc` binaries, I pass a
+  modified `$REQUIRED` as well, which allows all the settings to
+  propagate correctly.
+
+  Default behavior remains unchanged.
+---
+ Makefile | 62 ++++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 47 insertions(+), 15 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 982132d..0f1a6ad 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,33 +3,43 @@ ifneq ($(shell uname), Linux)
+ $(error OS must be Linux!)
+ endif
+ 
+-# Check if all required tools are on the system.
+-REQUIRED = sdcc sdar sdasz80
+-K := $(foreach exec,$(REQUIRED),\
+-    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+-
+ # Default platform is no platform.
+-export PLATFORM 	=	
++export PLATFORM 	=
+ 
+ # Global settings: folders.
+ export ROOT			=	$(realpath .)
++
++# PREFIX is a standardized env variable for the target install directory.
++export PREFIX		=	$(ROOT)/bin
++
+ export BUILD_DIR	=	$(ROOT)/build
+-export BIN_DIR		=	$(ROOT)/bin
++export BIN_DIR		=	$(PREFIX)
+ export INC_DIR		=	$(ROOT)/include
+ 
+ # Build reduced version of libraries?
+ export SLIM			=
+ 
+-# Globa settings: tools.
++# Instruction set. Could be -mz180 as well, for example.
++export ISET			= -mz80
++
++# Global settings: tools.
+ export CC			=	sdcc
+-export CFLAGS		=	--std-c11 -mz80 -I. -I$(INC_DIR) --no-std-crt0 --nostdinc --nostdlib --debug -D PLATFORM=$(PLATFORM) -D SLIM=$(SLIM)
++export CFLAGS		=	--std-c11 $(ISET) -I. -I$(INC_DIR) --no-std-crt0 --nostdinc --nostdlib --debug -D PLATFORM=$(PLATFORM) -D SLIM=$(SLIM)
+ export AS			=	sdasz80
+ export ASFLAGS		=	-xlos -g
+ export AR			=	sdar
+ export ARFLAGS		=	-rc
++export CPP			=	sdcpp
++export LD			=	sdldz80
++
++# Check if all required tools are on the system.
++REQUIRED = ${CC} ${AR} ${AS} ${CPP} ${LD}
++K := $(foreach exec,$(REQUIRED),\
++    $(if $(shell which $(exec)),,$(error "$(exec) not found. Please install or add to path.")))
+ 
+ # crt0.s
+ export CRT0			=	crt0cpm3-z80
++export CRT0EXT			=	.rel
+ 
+ # Subfolders for make.
+ SUBDIRS 			=	src
+@@ -39,7 +49,11 @@ SUBMODULES 			= 	lib/libsdcc-z80
+ .PHONY: all
+ all:	$(BUILD_DIR) $(SUBMODULES) $(SUBDIRS)
+ 	cp $(BUILD_DIR)/*.lib $(BIN_DIR)
+-	cp $(BUILD_DIR)/$(CRT0).rel $(BIN_DIR)
++	cp $(BUILD_DIR)/$(CRT0).rel $(BIN_DIR)/$(CRT0)$(CRT0EXT)
++
++# "make install" is somewhat expected to be present.
++.PHONY: install
++install: all
+ 
+ .PHONY: $(BUILD_DIR)
+ $(BUILD_DIR):
+@@ -52,13 +66,31 @@ $(BUILD_DIR):
+ 
+ .PHONY: $(SUBDIRS)
+ $(SUBDIRS):
+-	$(MAKE) -C $@
++	$(MAKE) -C $@ \
++		AS="$(AS)" \
++		CC="$(CC)" \
++		AR="$(AR)" \
++		CPP="$(CPP)" \
++		LD="$(LD)" \
++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)" \
++		CFLAGS="$(CFLAGS)"
+ 
+ .PHONY: $(SUBMODULES)
+ $(SUBMODULES):
+-	# Pass current build and bin directories.
+-	$(MAKE) -C $@ BUILD_DIR=$(BUILD_DIR) BIN_DIR=$(BIN_DIR)
+-	
++	# Pass current settings to the submodules.
++	$(MAKE) -C $@ \
++		BUILD_DIR=$(BUILD_DIR) \
++		BIN_DIR=$(BIN_DIR) \
++		AS="$(AS)" \
++		CC="$(CC)" \
++		AR="$(AR)" \
++		CPP="$(CPP)" \
++		LD="$(LD)" \
++		REQUIRED="$(AS) $(CC) $(AR) $(CPP) $(LD)" \
++		CFLAGS="$(CFLAGS)"
++
++
+ .PHONY: clean
+ clean:
+-	rm -f -r $(BUILD_DIR)
++	rm -f -r $(BUILD_DIR)
++
+-- 
+2.34.1
+

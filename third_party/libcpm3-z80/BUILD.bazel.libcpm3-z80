@@ -31,6 +31,7 @@ make(
 	"SDLD": "$(location @sdcc-linux//:sdld)",
   },
   install_prefix = "_install",
+  out_include_dir = "lib/include",
   lib_source = ":all_files",
   out_static_libs = [ 
 		  "libcpm3-z80.lib",
@@ -74,5 +75,33 @@ genrule(
 		srcs = [ ":_crt0_priv"],
 		outs = [ "crt0cpm3-z80.rel"],
 		cmd = "cp $</lib/crt0cpm3-z80.rel $@",
+		visibility = ["//visibility:public"],
+)
+
+genrule(
+		name = "includes",
+		srcs = [ ":_crt0_priv"],
+		outs = [
+				"ctype.h",
+				"dirent.h",
+				"errno.h",
+				"fcntl.h",
+				"float.h",
+				"limits.h",
+				"math.h",
+				"stdarg.h",
+				"stdbool.h",
+				"stddef.h",
+				"stdint.h",
+				"stdio.h",
+				"stdlib.h",
+				"string.h",
+				"sys/bdos.h",
+				"sys/stat.h",
+				"sys/types.h",
+				"time.h",
+				"unistd.h",
+				],
+		cmd = "cp -R --dereference $</lib/include/* $(RULEDIR)",
 		visibility = ["//visibility:public"],
 )

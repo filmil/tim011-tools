@@ -187,7 +187,8 @@ new_git_repository(
     commit = "982aad86671e01f11d5ad8c59dda0312832c1faf",
     patch_args = ["-p1"],
     patches = [
-        "//third_party/libcpm3-z80:0001-fix-check-after-defining-the-binaries.patch",
+        "//third_party/libcpm3-z80:0001-feat-adds-a-few-configurability-knobs.patch",
+        "//third_party/libcpm3-z80:0002-feat-copy-the-include-files-into-the-build-dir.patch",
     ],
     # for lib/libsdcc-z80
     init_submodules = True,

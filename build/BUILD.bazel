@@ -104,7 +104,7 @@ sdcc_z180_toolchain(
     assembler = "@sdcc-linux//:bin/sdasz80",
     compiler = "@sdcc-linux//:bin/sdcc",
     hextocom = "//third_party/hextocom",
-    includes = "@sdcc-linux//:includes_z180",
+    includes = "@libcpm3//:includes",
     librarian = "@sdcc-linux//:bin/sdar",
     libs = "@sdcc-linux//:libs_z180",
     linker = "@sdcc-linux//:bin/sdldz80",
