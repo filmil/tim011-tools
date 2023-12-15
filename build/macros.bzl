@@ -1,5 +1,15 @@
 
-def tim011_emu_run(name, image, program="r", romdir="@mame_docker//:romdir"):
+def tim011_emu_run(
+    name, 
+    image, 
+    slowdown=True, 
+    debug="",
+    sleep="5",
+    program="", 
+    romdir="@mame_docker//:romdir"):
+    sd="false"
+    if slowdown:
+        sd="true"
     native.sh_binary(
         name = name,
         srcs = ["//build:tim011_run_sh"],
@@ -16,5 +26,8 @@ def tim011_emu_run(name, image, program="r", romdir="@mame_docker//:romdir"):
             "--img-file", "$(location {})".format(image),
             "--rom-directory", "$(location {})".format(romdir),
             "--program-name", program,
+            "--slowdown={}".format(sd),
+            "--debug={}".format(debug),
+            "--sleep={}".format(sleep),
         ],
     )

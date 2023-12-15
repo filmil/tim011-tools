@@ -1,5 +1,6 @@
 #! /bin/bash
 
+set -x
 set -eo pipefail
 
 readonly _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -44,6 +45,21 @@ flags:
   type: string
   help: "The temporary directory to use - one will be generated if not given"
   default: ""
+- name: "slowdown"
+  type: bool
+  default: true
+  help: "Whether to slow the machine down to 100% once it boots"
+- name: "debug"
+  type: string
+  default: ""
+  help: "Additional flags to add to the command line."
+- name: "sleep"
+  type: int
+  default: 5 
+  help: "How long to sleep for the system to boot."
+- name: "kill-at-end"
+  type: bool
+  help: "Whether to kill the emulator at the end"
 EOF
 )
 if [[ "$?" == "11" ]]; then
@@ -85,6 +101,9 @@ fi
     -e HOME="/work" \
     -e PROGRAM="${gotopt2_program_name}"  \
     -e IMAGE="$(basename ${gotopt2_img_file})"  \
+    -e SLOWDOWN="${gotopt2_slowdown}"  \
+    -e DEBUG="${gotopt2_debug}"  \
+    -e KILL_AT_END="${gotopt2_kill_at_end}" \
     --net=host \
     "${CONTAINER_NAME}" \
     /bin/bash -c "/run.sh"

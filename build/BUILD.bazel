@@ -104,9 +104,7 @@ sdcc_z180_toolchain(
     assembler = "@sdcc-linux//:bin/sdasz80",
     compiler = "@sdcc-linux//:bin/sdcc",
     hextocom = "//third_party/hextocom",
-    includes = "@libcpm3//:includes",
     librarian = "@sdcc-linux//:bin/sdar",
-    libs = "@sdcc-linux//:libs_z180",
     linker = "@sdcc-linux//:bin/sdldz80",
     preprocessor = "@sdcc-linux//:bin/sdcpp",
     runtime_libs = [
@@ -114,10 +112,8 @@ sdcc_z180_toolchain(
         "@libcpm3//:libsdcc",
     ],
     crt0 = "@libcpm3//:crt0",
-    # Might need includes and libs.
+    includes = "@libcpm3//:includes",
     deps = [
-        "@sdcc-linux//:includes_z180",
-        #"@sdcc-linux//:libs_z180",
         "@libcpm3//:libcpm3",
         "@libcpm3//:libsdcc",
     ],

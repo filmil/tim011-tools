@@ -205,7 +205,11 @@ def _sdcc_z180_c_binary_impl(ctx):
 
     # Add libs and library flags
     libs = info.libs
-    lib_args = get_lib_args(info.libs)
+    lib_args = []
+    libs_files = []
+    if libs:
+        lib_args = get_lib_args(libs)
+        libs_files = lib_args.files.to_list()
 
     # Make a list of runtime libraries.
     runtime_libs_files = []
@@ -223,7 +227,7 @@ def _sdcc_z180_c_binary_impl(ctx):
     # Needs to add all include files and dirs from the dependencies.
     dep_headers, dep_rel_files = dep_and_rel(ctx.attr.deps)
 
-    crt0 = ctx.attr._crt0.files.to_list()[0]
+    crt0 = info.crt0.files.to_list()[0]
 
     # continue building
     source_files = [crt0]
@@ -248,7 +252,7 @@ def _sdcc_z180_c_binary_impl(ctx):
         inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
                   dep_headers +
-                  libs.files.to_list() +
+                  libs_files +
                   includes.files.to_list()),
         executable = compiler,
         input_manifests = input_manifests,
@@ -277,7 +281,6 @@ sdcc_z180_c_binary = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(),
-        "_crt0": attr.label(default = Label("@libcpm3//:crt0")),
     },
     toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
@@ -332,6 +335,8 @@ def _sdcc_z180_toolchain_impl(ctx):
             includes = ctx.attr.includes,
             librarian = ctx.attr.librarian,
             runtime_libs = ctx.attr.runtime_libs,
+            deps = ctx.attr.deps,
+            crt0 = ctx.attr.crt0,
         ),
     )
     return [toolchain_info]
