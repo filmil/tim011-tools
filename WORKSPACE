@@ -189,6 +189,7 @@ new_git_repository(
     patches = [
         "//third_party/libcpm3-z80:0001-feat-adds-a-few-configurability-knobs.patch",
         "//third_party/libcpm3-z80:0002-feat-copy-the-include-files-into-the-build-dir.patch",
+        "//third_party/libcpm3-z80:0003-fix-printf-not-working.patch",
     ],
     # for lib/libsdcc-z80
     init_submodules = True,

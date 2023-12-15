@@ -1,0 +1,36 @@
+From d3d34abaf9158c877cc19cc78810f4ef7ac0a173 Mon Sep 17 00:00:00 2001
+From: Filip Filmar <filmil@gmail.com>
+Date: Fri, 15 Dec 2023 06:04:28 +0000
+Subject: [PATCH 3/3] fix: printf not working?
+
+---
+ src/util/print.c | 2 +-
+ src/util/print.h | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/util/print.c b/src/util/print.c
+index 1200674..04f9616 100644
+--- a/src/util/print.c
++++ b/src/util/print.c
+@@ -320,4 +320,4 @@ out:
+ 	}
+ 	if (out) **out = '\0';
+ 	return pc;
+-}
++}
+diff --git a/src/util/print.h b/src/util/print.h
+index 569c653..547c1c5 100644
+--- a/src/util/print.h
++++ b/src/util/print.h
+@@ -23,6 +23,6 @@ extern int _prints(char **out, const char *string, int width, int flags);
+ #ifndef LEAN_AND_MEAN
+ extern int _outputi(char **out, long long i, int base, int sign, int width, int flags, int letbase);
+ #endif /* !LEAN_AND_MEAN */
+-extern int _vsprintf(char **out, char *format, va_list ap);
++extern int _vsprintf(char **out, char *format, va_list ap);
+ 
+-#endif /* __PRINT_H__ */
++#endif /* __PRINT_H__ */
+-- 
+2.34.1
+

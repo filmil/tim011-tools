@@ -13,5 +13,13 @@ tim011_disk_image(
     binaries = [ ":hw" ],
 )
 
-tim011_emu_run(name="emu", image=":img", program="hw")
+tim011_emu_run(
+    name="emu", 
+    image=":img", 
+    program="hw", 
+)
 
+sdcc_z180_cpm_emu_run(
+    name="emu2",
+    binary=":hw",
+)
