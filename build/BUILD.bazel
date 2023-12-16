@@ -81,19 +81,7 @@ sh_binary(
 
 filegroup(name="tim011_run_sh", srcs = ["tim011run.sh"], visibility = ["//visibility:public"])
 
-# gen_runner generates a runner script for a CP/M binary.
-sh_binary(
-    name = "gen_runner",
-    srcs = ["gen_runner.sh"],
-    data = [
-        "@gotopt2//cmd/gotopt2",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        # To detect the runfiles dir.
-        "@bazel_tools//tools/bash/runfiles",
-    ],
-)
+exports_files(["gen_runner.sh"])
 
 # SDCC Z180 raw toolchain definition
 

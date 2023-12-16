@@ -1,17 +1,14 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "unistd.h"
-
-int main();
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 int main() {
-    close(1);
-    FILE* f = fopen("file.txt", "wt");
-    if (f == NULL ) {
-        printf("oops");
+    FILE* f = fopen("0:file.txt", "wt");
+    if (f == NULL) {
+        printf("FAIL\n");
         return -1;
     }
-    printf("print==%d==\n", (int)1);
+    printf("PASS\n");
     fclose(f);
     return 0;
 }

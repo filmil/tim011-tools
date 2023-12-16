@@ -1,3 +1,8 @@
+load("//build:sdcc.bzl",
+    "sdcc_z180_c_binary", 
+    "sdcc_z180_cpm_emu_run",
+    "sdcc_z180_cpm_test",
+)
 load("//build:sdcc.bzl", "sdcc_z180_asm_library", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
 
 sdcc_z180_c_binary(
@@ -21,4 +26,9 @@ sdcc_z180_asm_library(
 sdcc_z180_cpm_emu_run(
     name = "emu",
     binary = ":hello",
+)
+
+sdcc_z180_cpm_test(
+    name="test",
+    binary=":hello",
 )
