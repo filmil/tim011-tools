@@ -34,6 +34,7 @@ def _tim011_disk_image(ctx):
             cp --dereference {base_image} {tmp_dir}/temp.img \
             {cpmcp_cmdline} \
             && cp --dereference {tmp_dir}/temp.img {output_file} \
+            && chmod a+w {output_file} \
         """.format(
             base_image = base_image.path,
             tmp_dir = tmp_dir.path,

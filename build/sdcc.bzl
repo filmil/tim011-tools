@@ -30,9 +30,9 @@ _SDCC_OPTIONS = [
     "-mz180",
     "--std-c11",
     # 16-bit I/O space of the HD64180
-    #"--codeseg", "CODE",
-    #"--dataseg", "CODE",
-    #"--constseg", "CODE",
+    "--codeseg", "CODE",
+    "--dataseg", "CODE",
+    "--constseg", "CODE",
     "--code-loc", "0x100",
     "--nostdinc",
     "--no-std-crt0",
@@ -280,14 +280,11 @@ def _sdcc_z180_c_binary_impl(ctx):
         out_name,
     ] + sources
 
+    linker_script = ctx.actions.declare_file("{}.lk".format(ctx.label.name))
     ctx.actions.run(
-        mnemonic = "SDCC",
+        mnemonic = "SDCClink1",
         progress_message = "linking {}".format(ihx_file.basename),
-        outputs = [ihx_file] + declare_sdcc_extensions(
-            ctx.actions.declare_file,
-            ctx.label.name,
-            ["map", "lk", "noi"],
-        ),
+        outputs = [linker_script],
         inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
                   dep_headers +
@@ -297,6 +294,40 @@ def _sdcc_z180_c_binary_impl(ctx):
         input_manifests = input_manifests,
         arguments = all_args,
     )
+
+    linker_script_2 = ctx.actions.declare_file("{}.2.lk".format(ctx.label.name))
+    ctx.actions.run_shell(
+        mnemonic = "SDCClink2",
+        inputs = [linker_script],
+        outputs = [linker_script_2],
+        command = """\
+            sed '/-b _DATA = 0x8000/d' {l1} > {l2}
+        """.format(l1=linker_script.path, l2=linker_script_2.path)
+    )
+
+    linker = info.linker
+    print(linker.files.to_list()[0].path)
+    ctx.actions.run(
+        mnemonic = "SDCClink1",
+        progress_message = "linking {}".format(ihx_file.basename),
+        outputs = [ihx_file] + declare_sdcc_extensions(
+            ctx.actions.declare_file,
+            ctx.label.name,
+            ["map",  "noi"],
+        ),
+        inputs = (runtime_libs_files + runfiles_inputs +
+                  source_files +
+                  dep_headers +
+                  libs_files +
+                  [linker_script_2] +
+                  includes.files.to_list()),
+        executable = linker.files.to_list()[0],
+        input_manifests = input_manifests,
+        arguments = [
+            "-nf", linker_script_2.path,
+        ],
+    )
+
     com_file = ctx.actions.declare_file("{}.com".format(ctx.label.name))
     outputs = [com_file]
     objcopy = info.objcopy.files.to_list()[0]
