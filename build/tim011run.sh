@@ -91,6 +91,8 @@ if sh -c ": >/dev/tty" >/dev/null 2>/dev/null; then
 	INTERACTIVE="--interactive --tty"
 fi
 
+cp ${gotopt2_img_file} ${_tmpdir}
+
 (
   docker run \
     ${INTERACTIVE} \
