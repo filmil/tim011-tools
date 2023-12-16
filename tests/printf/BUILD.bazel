@@ -1,4 +1,8 @@
-load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl",
+    "sdcc_z180_c_binary", 
+    "sdcc_z180_cpm_emu_run",
+    "sdcc_z180_cpm_test",
+)
 load("//build/tim011-image:rules.bzl", "tim011_disk_image")
 load("//build:macros.bzl", "tim011_emu_run")  # Probably needs reshuffling.
 
@@ -21,5 +25,10 @@ tim011_emu_run(
 
 sdcc_z180_cpm_emu_run(
     name="emu2",
+    binary=":hw",
+)
+
+sdcc_z180_cpm_test(
+    name="test",
     binary=":hw",
 )

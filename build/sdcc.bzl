@@ -28,12 +28,15 @@ CPMBinary = provider(
 
 _SDCC_OPTIONS = [
     "-mz180",
+    "--std-c11",
     # 16-bit I/O space of the HD64180
     #"--codeseg", "CODE",
     #"--dataseg", "CODE",
     #"--constseg", "CODE",
     "--code-loc", "0x100",
     "--nostdinc",
+    "--no-std-crt0",
+    "--nostdlib",
 ]
 
 # Declare all the interesting files that sdcc produces.
@@ -191,6 +194,7 @@ def _sdcc_z180_c_library_impl(ctx):
         SdccHeaders(headers = depset(declared_headers), rels = depset([lib_file])),
     ]
 
+
 sdcc_z180_c_library = rule(
     implementation = _sdcc_z180_c_library_impl,
     attrs = {
@@ -202,6 +206,7 @@ sdcc_z180_c_library = rule(
     },
     toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
+
 
 def _sdcc_z180_c_binary_impl(ctx):
     info = get_sdcc_info(ctx)
@@ -234,28 +239,54 @@ def _sdcc_z180_c_binary_impl(ctx):
     # Needs to add all include files and dirs from the dependencies.
     dep_headers, dep_rel_files = dep_and_rel(ctx.attr.deps)
 
+    # C runtime library setup code. This should be placed at the beginning of
+    # the program.
     crt0 = info.crt0.files.to_list()[0]
 
+    ## First, build object files from the sources.
+    obj_files = []
+    for src_target in ctx.attr.srcs:
+        for src_file in src_target.files.to_list():
+            # Compile src_file here.
+            obj = ctx.actions.declare_file("{}.rel".format(src_file.basename))
+            obj_files += [obj]
+            args = ctx.actions.args()
+            args.add("-o", obj.path)
+            args.add("-c", src_file.path)
+
+            added_outputs = declare_sdcc_extensions(
+                ctx.actions.declare_file,
+                src_file.basename,
+                ["rel", "sym", "asm", "lst" ]
+            )
+            ctx.actions.run(
+                progress_message = "compiling {}".format(src_file.basename),
+                mnemonic = "SDCC",
+                inputs = [ src_file ] + dep_headers + includes.files.to_list(),
+                outputs = [obj] + added_outputs,
+                executable = compiler,
+                input_manifests = input_manifests,
+                arguments = _SDCC_OPTIONS + incl_args + [args],
+                tools = info.preprocessor.files.to_list() +
+                    info.assembler.files.to_list(),
+            )
+
     # continue building
-    source_files = [crt0]
-    for source in ctx.attr.srcs:
-        files = source.files.to_list()
-        source_files += files
-    source_files += dep_rel_files
+    source_files = [crt0] + obj_files + dep_rel_files
     sources = [file.path for file in source_files]
     all_args = _SDCC_OPTIONS + runtime_libs_flags + [
-        "--no-std-crt0",
-        "--nostdlib",
     ] + lib_args + incl_args + [
         "-o",
         out_name,
     ] + sources
+
     ctx.actions.run(
         mnemonic = "SDCC",
+        progress_message = "linking {}".format(ihx_file.basename),
         outputs = [ihx_file] + declare_sdcc_extensions(
             ctx.actions.declare_file,
             ctx.label.name,
-            ["rel", "sym", "asm", "lst", "map", "lk", "noi"],
+            ["map", "lk", "noi"],
         ),
         inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
@@ -268,18 +299,8 @@ def _sdcc_z180_c_binary_impl(ctx):
     )
     com_file = ctx.actions.declare_file("{}.com".format(ctx.label.name))
     outputs = [com_file]
-    #hextocom = info.hextocom.files.to_list()[0]
-    #ctx.actions.run(
-        #mnemonic = "HEXTOCOM",
-        #outputs = outputs,
-        #inputs = [ihx_file],
-        #executable = hextocom,
-        #arguments = [
-            #ihx_file.path,
-            #com_file.path,
-        #],
-    #)
     objcopy = info.objcopy.files.to_list()[0]
+
     ctx.actions.run(
         mnemonic = "OBJCOPY",
         outputs = outputs,
@@ -418,36 +439,30 @@ sdcc_z180_toolchain = rule(
     },
 )
 
-def sdcc_z180_cpm_emu_run(name, binary, visibility = None):
-    script_name = name + ".sh"
-    ggen_name = name + "_gen"
-    native.genrule(
-        name = ggen_name,
-        cmd = """\
-            $(location //build:gen_runner) \
-            --script=$@ \
-            --runner=$(location //CPMEmulator:cpm) \
-            --cpm-binary=$(location {binary})
-        """.format(script = script_name, binary = binary),
-        outs = [script_name],
-        tools = [
-            "//build:cpmrun",
-            "//build:gen_runner",
+def sdcc_z180_cpm_emu_run(name, binary, visibility=None, rule=native.sh_binary, env={}):
+    rule(
+        name = name,
+        srcs = [Label("//build:gen_runner.sh")],
+        data = [
             "//CPMEmulator:cpm",
             binary,
-        ],
-        visibility = visibility,
-    )
-    native.sh_binary(
-        name = name,
-        srcs = [script_name],
-        data = [
-            ":{}".format(ggen_name),
-            "//CPMEmulator:cpm",
         ],
         deps = [
             # To detect the runfiles dir.
             "@bazel_tools//tools/bash/runfiles",
         ],
         visibility = visibility,
+        env = {
+            "CPM_BINARY": "$(location //CPMEmulator:cpm)",
+            "RUN_BINARY": "$(location {})".format(binary),
+        },
+    )
+
+
+def sdcc_z180_cpm_test(name, binary, visibility=None):
+    sdcc_z180_cpm_emu_run(
+        name, 
+        binary, 
+        visibility, 
+        native.sh_test,
     )

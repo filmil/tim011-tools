@@ -9,6 +9,6 @@ int main() {
    for (unsigned int i=0; i < 0x8000; i++) {
       outp(c++, 0x8000 + i);
    }
-   return 0;
+   return -1;
 }
 

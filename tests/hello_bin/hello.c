@@ -4,7 +4,7 @@
 
 int main() {
    printf("hello world!\n");
-   putchar('\n');
+   put('\n');
    return 0;
 }
 

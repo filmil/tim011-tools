@@ -1112,7 +1112,7 @@ interrupt(int s)
 int thread_working = 1;
 
 /* X11 prozor*/
-Display *d;
+Display *d = NULL;
 Window w;
 
 /* redni brojevi i kodovi boja*/
@@ -1221,6 +1221,8 @@ main(int argc, const char *argv[])
 		fprintf(stderr, "\n");
 		exit(0);
 	}
+
+		char* display_env = getenv("DISPLAY");
 /*
 	if (cmd[0]) {
 		stuff_cmd = cmd;
@@ -1263,6 +1265,7 @@ main(int argc, const char *argv[])
 
 /*********** TIM-011 BEGIN **********************/
 /*    // X11 prozor*/
+if (display_env != NULL) {
     Window r;
     XEvent e;
     Atom wmDeleteMessage;
@@ -1349,6 +1352,7 @@ main(int argc, const char *argv[])
     pthread_join(testing,NULL);
 
     XCloseDisplay(d);
+		}
 /*********** TIM-011 END **********************/
 
     return 0;
