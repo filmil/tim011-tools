@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 int main() {
-    FILE* f = fopen("0:file.txt", "wt");
+    FILE* f = fopen("file.txt", "wt");
     if (f == NULL) {
-        printf("FAIL\n");
+        printf("errno: %s(%d)\nFAIL\n", strerror(errno), errno);
         return -1;
     }
     printf("PASS\n");

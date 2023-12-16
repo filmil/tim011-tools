@@ -1,4 +1,7 @@
 #!/bin/bash
+
+env
+
 RUNNER="$(realpath ${CPM_BINARY})"
 BINARY="${RUN_BINARY}"
 DIR="$(dirname $BINARY)"
