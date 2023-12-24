@@ -1,14 +1,18 @@
-load("//build:sdcc.bzl",
-    "sdcc_z180_c_binary", 
+load(
+    "//build:sdcc.bzl",
+    "sdcc_z180_c_binary",
     "sdcc_z180_cpm_emu_run",
     "sdcc_z180_cpm_test",
 )
 load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_c_library")
 
 sdcc_z180_c_binary(
-    name = "hello_bin",
+    name = "hello",
     srcs = ["hello.c"],
-    deps = [":lib"],
+    deps = [
+        ":lib",
+        "//lib/testing:minunit",
+    ],
 )
 
 sdcc_z180_c_library(
@@ -18,6 +22,6 @@ sdcc_z180_c_library(
 )
 
 sdcc_z180_cpm_test(
-    name="test",
-    binary=":hello_bin",
+    name = "test",
+    binary = ":hello",
 )

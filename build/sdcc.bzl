@@ -30,10 +30,14 @@ _SDCC_OPTIONS = [
     "-mz180",
     "--std-c11",
     # 16-bit I/O space of the HD64180
-    "--codeseg", "CODE",
-    "--dataseg", "CODE",
-    "--constseg", "CODE",
-    "--code-loc", "0x100",
+    "--codeseg",
+    "CODE",
+    "--dataseg",
+    "CODE",
+    "--constseg",
+    "CODE",
+    "--code-loc",
+    "0x100",
     "--nostdinc",
     "--no-std-crt0",
     "--nostdlib",
@@ -194,7 +198,6 @@ def _sdcc_z180_c_library_impl(ctx):
         SdccHeaders(headers = depset(declared_headers), rels = depset([lib_file])),
     ]
 
-
 sdcc_z180_c_library = rule(
     implementation = _sdcc_z180_c_library_impl,
     attrs = {
@@ -206,7 +209,6 @@ sdcc_z180_c_library = rule(
     },
     toolchains = ["//build:toolchain_type_sdcc_z180"],
 )
-
 
 def _sdcc_z180_c_binary_impl(ctx):
     info = get_sdcc_info(ctx)
@@ -236,6 +238,16 @@ def _sdcc_z180_c_binary_impl(ctx):
     includes = info.includes
     incl_args = get_incl_args(includes)
 
+    deps_headers = []
+    deps_rels = []
+    for lib_target in ctx.attr.deps:
+        provider = lib_target[SdccHeaders]
+        deps_headers += provider.headers.to_list()
+        deps_rels += provider.rels.to_list()
+    deps_headers_files = [f.path for f in deps_headers]
+    deps_rels_files = [f.path for f in deps_rels]
+    deps_headers_dirs = [f.dirname for f in deps_headers]
+
     # Needs to add all include files and dirs from the dependencies.
     dep_headers, dep_rel_files = dep_and_rel(ctx.attr.deps)
 
@@ -253,26 +265,33 @@ def _sdcc_z180_c_binary_impl(ctx):
             args = ctx.actions.args()
             args.add("-o", obj.path)
             args.add("-c", src_file.path)
+            args.add_all(deps_rels_files, before_each = "-l")
+            args.add_all(deps_headers_dirs, before_each = "-I")
 
             added_outputs = declare_sdcc_extensions(
                 ctx.actions.declare_file,
                 src_file.basename,
-                ["rel", "sym", "asm", "lst" ]
+                ["rel", "sym", "asm", "lst"],
             )
             ctx.actions.run(
                 progress_message = "compiling {}".format(src_file.basename),
                 mnemonic = "SDCC",
-                inputs = [ src_file ] + dep_headers + includes.files.to_list(),
+                inputs = (
+                    [src_file] +
+                    dep_headers +
+                    includes.files.to_list() +
+                    deps_headers + deps_rels
+                ),
                 outputs = [obj] + added_outputs,
                 executable = compiler,
                 input_manifests = input_manifests,
                 arguments = _SDCC_OPTIONS + incl_args + [args],
                 tools = info.preprocessor.files.to_list() +
-                    info.assembler.files.to_list(),
+                        info.assembler.files.to_list(),
             )
 
     # continue building
-    source_files = [crt0] + obj_files + dep_rel_files
+    source_files = [crt0] + dep_rel_files + obj_files
     sources = [file.path for file in source_files]
     all_args = _SDCC_OPTIONS + runtime_libs_flags + [
     ] + lib_args + incl_args + [
@@ -283,7 +302,7 @@ def _sdcc_z180_c_binary_impl(ctx):
     linker_script = ctx.actions.declare_file("{}.lk".format(ctx.label.name))
     ctx.actions.run(
         mnemonic = "SDCClink1",
-        progress_message = "linking {}".format(ihx_file.basename),
+        progress_message = "linking 1 {}".format(ihx_file.basename),
         outputs = [linker_script],
         inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
@@ -302,18 +321,17 @@ def _sdcc_z180_c_binary_impl(ctx):
         outputs = [linker_script_2],
         command = """\
             sed '/-b _DATA = 0x8000/d' {l1} > {l2}
-        """.format(l1=linker_script.path, l2=linker_script_2.path)
+        """.format(l1 = linker_script.path, l2 = linker_script_2.path),
     )
 
     linker = info.linker
-    print(linker.files.to_list()[0].path)
     ctx.actions.run(
         mnemonic = "SDCClink1",
-        progress_message = "linking {}".format(ihx_file.basename),
+        progress_message = "linking 2 {}".format(ihx_file.basename),
         outputs = [ihx_file] + declare_sdcc_extensions(
             ctx.actions.declare_file,
             ctx.label.name,
-            ["map",  "noi"],
+            ["map", "noi"],
         ),
         inputs = (runtime_libs_files + runfiles_inputs +
                   source_files +
@@ -324,7 +342,8 @@ def _sdcc_z180_c_binary_impl(ctx):
         executable = linker.files.to_list()[0],
         input_manifests = input_manifests,
         arguments = [
-            "-nf", linker_script_2.path,
+            "-nf",
+            linker_script_2.path,
         ],
     )
 
@@ -338,8 +357,10 @@ def _sdcc_z180_c_binary_impl(ctx):
         inputs = [ihx_file],
         executable = objcopy,
         arguments = [
-            "-I", "ihex",
-            "-O", "binary",
+            "-I",
+            "ihex",
+            "-O",
+            "binary",
             ihx_file.path,
             com_file.path,
         ],
@@ -470,7 +491,7 @@ sdcc_z180_toolchain = rule(
     },
 )
 
-def sdcc_z180_cpm_emu_run(name, binary, visibility=None, rule=native.sh_binary, env={}):
+def sdcc_z180_cpm_emu_run(name, binary, visibility = None, rule = native.sh_binary, env = {}):
     rule(
         name = name,
         srcs = [Label("//build:gen_runner.sh")],
@@ -489,11 +510,10 @@ def sdcc_z180_cpm_emu_run(name, binary, visibility=None, rule=native.sh_binary, 
         },
     )
 
-
-def sdcc_z180_cpm_test(name, binary, visibility=None):
+def sdcc_z180_cpm_test(name, binary, visibility = None):
     sdcc_z180_cpm_emu_run(
-        name, 
-        binary, 
-        visibility, 
+        name,
+        binary,
+        visibility,
         native.sh_test,
     )

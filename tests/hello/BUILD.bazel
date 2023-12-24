@@ -1,5 +1,6 @@
-load("//build:sdcc.bzl",
-    "sdcc_z180_c_binary", 
+load(
+    "//build:sdcc.bzl",
+    "sdcc_z180_c_binary",
     "sdcc_z180_cpm_emu_run",
     "sdcc_z180_cpm_test",
 )
@@ -12,6 +13,7 @@ sdcc_z180_c_binary(
         "//tests/hello/putchar",
         # This binary links assembly code!
         ":dot",
+        "//lib/testing:minunit",
     ],
 )
 
@@ -29,6 +31,6 @@ sdcc_z180_cpm_emu_run(
 )
 
 sdcc_z180_cpm_test(
-    name="test",
-    binary=":hello",
+    name = "test",
+    binary = ":hello",
 )

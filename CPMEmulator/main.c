@@ -1264,8 +1264,11 @@ main(int argc, const char *argv[])
 */
 
 /*********** TIM-011 BEGIN **********************/
+if (display_env == NULL) {
+	int param = 0;
+	z80main(&param);
+} else {
 /*    // X11 prozor*/
-if (display_env != NULL) {
     Window r;
     XEvent e;
     Atom wmDeleteMessage;

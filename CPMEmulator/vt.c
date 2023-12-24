@@ -180,9 +180,10 @@ void vt52(int c) {	/* simple vt52,adm3a => ANSI conversion */
     char buff[32];
 #ifdef DEBUGLOG
     static FILE *log = NULL;
-    if (!log)
-	log = fopen("cpm.out", "w");
+    log = fopen("cpm.out", "a");
     fputc(c, log);
+    /* This is horrible, but seems to be an easy way to get at a log. */
+    fclose(log);
 #endif
     switch (state) {
     case 0:

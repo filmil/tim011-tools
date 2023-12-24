@@ -9,27 +9,10 @@ load("//build:macros.bzl", "tim011_emu_run")
 
 sdcc_z180_c_binary(
     name = "bin",
-    srcs = ["main.c"],
+    srcs = ["test.c"],
     deps = [
         "//lib/testing:minunit",
     ],
-)
-
-tim011_disk_image(
-    name = "img",
-    base_image = "@mame_docker//:TIM011-Kit.img",
-    binaries = [":bin"],
-)
-
-tim011_emu_run(
-    name = "emu",
-    image = ":img",
-    program = "bin",
-)
-
-sdcc_z180_cpm_emu_run(
-    name = "emu2",
-    binary = ":bin",
 )
 
 sdcc_z180_cpm_test(
