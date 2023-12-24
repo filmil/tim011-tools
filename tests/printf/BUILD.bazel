@@ -1,5 +1,6 @@
-load("//build:sdcc.bzl",
-    "sdcc_z180_c_binary", 
+load(
+    "//build:sdcc.bzl",
+    "sdcc_z180_c_binary",
     "sdcc_z180_cpm_emu_run",
     "sdcc_z180_cpm_test",
 )
@@ -9,26 +10,29 @@ load("//build:macros.bzl", "tim011_emu_run")  # Probably needs reshuffling.
 sdcc_z180_c_binary(
     name = "hw",
     srcs = ["main.c"],
+    deps = [
+        "//lib/testing:minunit",
+    ],
 )
 
 tim011_disk_image(
     name = "img",
     base_image = "@mame_docker//:TIM011-Kit.img",
-    binaries = [ ":hw" ],
+    binaries = [":hw"],
 )
 
 tim011_emu_run(
-    name="emu", 
-    image=":img", 
-    program="hw", 
+    name = "emu",
+    image = ":img",
+    program = "hw",
 )
 
 sdcc_z180_cpm_emu_run(
-    name="emu2",
-    binary=":hw",
+    name = "emu2",
+    binary = ":hw",
 )
 
 sdcc_z180_cpm_test(
-    name="test",
-    binary=":hw",
+    name = "test",
+    binary = ":hw",
 )

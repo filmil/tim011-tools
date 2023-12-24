@@ -169,29 +169,46 @@ http_archive(
     ],
 )
 
-
 # MAME emulator for TIM-011
 new_git_repository(
     name = "mame_docker",
     build_file = "//third_party/mame-docker:BUILD.bazel.mame-docker",
-    remote = "https://github.com/filmil/mame-docker",
     commit = "f06cee32d2079f10f826624a3fceb8dc55f09c75",
+    remote = "https://github.com/filmil/mame-docker",
 )
-
 
 # C runtime library for CPM
 new_git_repository(
     name = "libcpm3",
     build_file = "//third_party/libcpm3-z80:BUILD.bazel.libcpm3-z80",
-    remote = "https://github.com/retro-vault/libcpm3-z80",
     commit = "982aad86671e01f11d5ad8c59dda0312832c1faf",
+    # for lib/libsdcc-z80
+    init_submodules = True,
     patch_args = ["-p1"],
     patches = [
         "//third_party/libcpm3-z80:0001-feat-adds-a-few-configurability-knobs.patch",
         "//third_party/libcpm3-z80:0002-feat-copy-the-include-files-into-the-build-dir.patch",
         "//third_party/libcpm3-z80:0003-fix-printf-not-working.patch",
     ],
-    # for lib/libsdcc-z80
-    init_submodules = True,
+    remote = "https://github.com/retro-vault/libcpm3-z80",
 )
 
+# BEGIN: bazoekt
+http_archive(
+    name = "bazoekt",
+    sha256 = "",
+    strip_prefix = "bazoekt",
+    urls = [
+        "https://github.com/filmil/bazoekt/releases/download/0.0.7/bazoekt-linux-amd64.zip",
+    ],
+)
+# END: bazoekt
+
+# BEGIN: unit testing - minunit
+new_git_repository(
+    name = "minunit",
+    build_file = "//third_party/minunit:BUILD.bazel.minunit",
+    commit = "a0586569bd8abfb7a37390d670484c201e9173bf",
+    remote = "https://github.com/siu/minunit",
+)
+# END: unit testing - minunit

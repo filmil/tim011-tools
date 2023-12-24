@@ -1,7 +1,6 @@
 load("//build:sdcc.bzl", "CPMBinary")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-
 def _tim011_disk_image(ctx):
     name = ctx.attr.name
     base_image = ctx.attr.base_image.files.to_list()[0]
@@ -19,11 +18,15 @@ def _tim011_disk_image(ctx):
     diskdefs = "{}/share/diskdefs".format(gen_dir.path)
     cpmcp_cmdline = ""
     if len(input_files) > 0:
-        cpmcp_cmdline = """&& env DISKDEFS="{diskdefs}" {cpmcp} -f tim011 {tmp_dir}/temp.img {files} 0: """.format(files=" ".join([
-        f.path for f in input_files]), 
-        tmp_dir=tmp_dir.path, 
-        diskdefs=diskdefs,
-        cpmcp=cpmcp.path)
+        cpmcp_cmdline = """&& env DISKDEFS="{diskdefs}" {cpmcp} -f tim011 {tmp_dir}/temp.img {files} 0: """.format(
+            files = " ".join([
+                f.path
+                for f in input_files
+            ]),
+            tmp_dir = tmp_dir.path,
+            diskdefs = diskdefs,
+            cpmcp = cpmcp.path,
+        )
 
     ctx.actions.run_shell(
         mnemonic = "TIM011img",
@@ -42,23 +45,22 @@ def _tim011_disk_image(ctx):
             files = " ".join([f.path for f in input_files]),
             output_file = final_image.path,
             diskdefs = diskdefs,
-            cpmcp_cmdline=cpmcp_cmdline,
+            cpmcp_cmdline = cpmcp_cmdline,
         ),
     )
 
     return [
-        DefaultInfo(files=depset([final_image])),
+        DefaultInfo(files = depset([final_image])),
     ]
-
 
 tim011_disk_image = rule(
     implementation = _tim011_disk_image,
     attrs = {
         "base_image": attr.label(
             allow_files = True,
-            default = Label("@mame_docker//:TIM011-Kit.img")
+            default = Label("@mame_docker//:TIM011-Kit.img"),
         ),
-        "binaries" : attr.label_list(
+        "binaries": attr.label_list(
             providers = [CPMBinary],
         ),
         "_cpmcp": attr.label(

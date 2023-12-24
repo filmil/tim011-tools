@@ -1,0 +1,16 @@
+load(
+    "//build:sdcc.bzl",
+    "sdcc_z180_c_library",
+    "sdcc_z180_cpm_emu_run",
+    "sdcc_z180_cpm_test",
+)
+load("//build/tim011-image:rules.bzl", "tim011_disk_image")
+load("//build:macros.bzl", "tim011_emu_run")
+
+package(default_visibility = ["//visibility:public"])
+
+sdcc_z180_c_library(
+    name = "minunit",
+    srcs = ["minunit_main.c"],
+    hdrs = ["minunit.h"],
+)

@@ -3,13 +3,16 @@
 #include <errno.h>
 #include <string.h>
 
-int main() {
+#include "lib/testing/minunit.h"
+
+char* all_tests() {
     FILE* f = fopen("file.txt", "wt");
     if (f == NULL) {
         printf("errno: %s(%d)\nFAIL\n", strerror(errno), errno);
-        return -1;
+        return 0;
     }
     printf("PASS\n");
     fclose(f);
+    minunit_write_test_ok();
     return 0;
 }
