@@ -181,15 +181,9 @@ new_git_repository(
 new_git_repository(
     name = "libcpm3",
     build_file = "//third_party/libcpm3-z80:BUILD.bazel.libcpm3-z80",
-    commit = "982aad86671e01f11d5ad8c59dda0312832c1faf",
-    # for lib/libsdcc-z80
+    commit = "819edbc9c92ce57d5c0773c37945a074f278da5e",
+    # For lib/libsdcc-z80
     init_submodules = True,
-    patch_args = ["-p1"],
-    patches = [
-        "//third_party/libcpm3-z80:0001-feat-adds-a-few-configurability-knobs.patch",
-        "//third_party/libcpm3-z80:0002-feat-copy-the-include-files-into-the-build-dir.patch",
-        "//third_party/libcpm3-z80:0003-fix-printf-not-working.patch",
-    ],
     remote = "https://github.com/retro-vault/libcpm3-z80",
 )
 
