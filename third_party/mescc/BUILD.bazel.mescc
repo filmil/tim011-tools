@@ -1,33 +1,33 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-  name = "includes",
-  srcs = [
-    "mescc.h",
-    "alloc.h",
-    "atexit.h",
-    "bsearch.h",
-    "ctype.h",
-    "fileio.h",
-    "fprintf.h",
-    "conio.h",
-    "clock.h",
-  ],
+    name = "includes",
+    srcs = [
+        "alloc.h",
+        "atexit.h",
+        "bsearch.h",
+        "clock.h",
+        "conio.h",
+        "ctype.h",
+        "fileio.h",
+        "fprintf.h",
+        "mescc.h",
+    ],
 )
 
 filegroup(
-  name = "libs",
-  srcs = [
-    "small_c_17/CONIO2.LIB",
-  ],
+    name = "libs",
+    srcs = [
+        "small_c_17/CONIO2.LIB",
+    ],
 )
 
 filegroup(
-  name = "cpm_binaries",
-  srcs = [
-    "cc.com", 
-    "CCOPT.COM",
-    "HEXTOCOM.COM",
-    "ZSM.COM",
-  ],
+    name = "cpm_binaries",
+    srcs = [
+        "CCOPT.COM",
+        "HEXTOCOM.COM",
+        "ZSM.COM",
+        "cc.com",
+    ],
 )

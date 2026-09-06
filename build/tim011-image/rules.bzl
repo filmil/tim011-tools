@@ -1,5 +1,4 @@
 load("//build:sdcc.bzl", "CPMBinary")
-load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _tim011_disk_image(ctx):
     name = ctx.attr.name
@@ -11,7 +10,7 @@ def _tim011_disk_image(ctx):
     input_files = []
     for target in ctx.attr.binaries:
         cpm_binary = target[CPMBinary].binary
-        input_files += [cpm_binary]
+        input_files.append(cpm_binary)
 
     final_image = ctx.actions.declare_file("{}.tim011.img".format(name))
     tmp_dir = ctx.actions.declare_directory("{}.tmp_dir".format(name))
@@ -65,13 +64,13 @@ tim011_disk_image = rule(
         ),
         "_cpmcp": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             default = Label("@cpmtools//:cpmcp"),
         ),
         "_gen_dir": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@cpmtools//:gen_dir"),
         ),
     },

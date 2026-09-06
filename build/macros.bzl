@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
 def tim011_emu_run(
         name,
         image,
@@ -9,7 +11,7 @@ def tim011_emu_run(
     sd = "false"
     if slowdown:
         sd = "true"
-    native.sh_binary(
+    sh_binary(
         name = name,
         srcs = ["//build:tim011_run_sh"],
         data = [

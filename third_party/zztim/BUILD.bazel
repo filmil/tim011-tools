@@ -1,12 +1,8 @@
-load(
-    "@pypi//:requirements.bzl",
-    "data_requirement",
-    "dist_info_requirement",
-    "entry_point",
-    "requirement",
-)
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+# Only `requirement` is used. The other three symbols were imported but never
+# called, and modern rules_python no longer exports `entry_point` at all.
+load("@pypi//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 package(default_visibility = ["//visibility:public"])
 
