@@ -1,0 +1,95 @@
+module(
+    name = "tim011_tools",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "rules_cc", version = "0.2.20")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
+bazel_dep(name = "rules_python", version = "2.3.3")
+bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "gotopt2", version = "2.8.11")
+
+bazel_dep(name = "buildifier_prebuilt", version = "8.5.1.4", dev_dependency = True)
+
+# Cross toolchains defined in this repository.
+register_toolchains(
+    "//build:mescc_linux_toolchain",
+    "//build:sdcc_z180_linux_toolchain",
+)
+
+http_archive = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+)
+
+new_git_repository = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:git.bzl",
+    "new_git_repository",
+)
+
+# The Z180 cross compiler.
+http_archive(
+    name = "sdcc-linux",
+    build_file = "//third_party/sdcc:BUILD.bazel.sdcc",
+    strip_prefix = "sdcc-4.3.0",
+    type = "tar.bz2",
+    urls = ["https://sourceforge.net/projects/sdcc/files/sdcc-linux-amd64/4.3.0/sdcc-4.3.0-amd64-unknown-linux2.5.tar.bz2/download"],
+)
+
+# The MESCC compiler.
+new_git_repository(
+    name = "mescc",
+    build_file = "//third_party/mescc:BUILD.bazel.mescc",
+    commit = "762ac3ba1c020352223831bc9faf26d57ecb5b8a",
+    remote = "https://github.com/MiguelVis/mescc",
+)
+
+# CP/M disk image tools, patched for the TIM-011 disk format.
+http_archive(
+    name = "cpmtools",
+    build_file = "//third_party/cpmtools:BUILD.bazel.cpmtools",
+    patch_args = ["-p1"],
+    patches = ["//third_party/cpmtools:0001-fix-patch-diskdefs-for-tim011.patch"],
+    sha256 = "7839b19ac15ba554e1a1fc1dbe898f62cf2fd4db3dcdc126515facc6b929746f",
+    strip_prefix = "cpmtools-2.23",
+    type = ".tar.gz",
+    urls = ["http://www.moria.de/~michael/cpmtools/files/cpmtools-2.23.tar.gz"],
+)
+
+# The upstream TIM-011 tools this repository forked from.
+new_git_repository(
+    name = "zztim",
+    build_file = "//third_party/zztim:BUILD.bazel.zztim",
+    commit = "74a1d747535c4b052a6cbc9d59532029f60642f9",
+    patch_args = ["-p1"],
+    patches = ["//third_party/zztim:0001-fix-patch-for-bazel.patch"],
+    remote = "https://bitbucket.org/zzarko/tim011-tools",
+)
+
+new_git_repository(
+    name = "mame_docker",
+    build_file = "//third_party/mame-docker:BUILD.bazel.mame-docker",
+    commit = "f06cee32d2079f10f826624a3fceb8dc55f09c75",
+    remote = "https://github.com/filmil/mame-docker",
+)
+
+new_git_repository(
+    name = "libcpm3",
+    build_file = "//third_party/libcpm3-z80:BUILD.bazel.libcpm3-z80",
+    commit = "819edbc9c92ce57d5c0773c37945a074f278da5e",
+    init_submodules = True,
+    remote = "https://github.com/retro-vault/libcpm3-z80",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.9")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.9",
+    requirements_lock = "//third_party:requirements_lock.txt",
+)
+use_repo(pip, "pypi")
