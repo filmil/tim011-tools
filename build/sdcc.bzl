@@ -1,3 +1,6 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 SdccInfo = provider(
     doc = "Information on how to invoke the SDCC compiler for CPM",
     fields = [
@@ -78,7 +81,7 @@ def get_lib_args(libs):
         basename = file.basename
         if not dirname in dirs:
             lib_args += ["-L", dirname]
-            dirs += [dirname]
+            dirs.append(dirname)
         lib_args += ["-l", basename]
     return lib_args
 
@@ -89,7 +92,7 @@ def get_incl_args(incls):
         dirname = file.dirname
         if not dirname in dirs:
             incl_args += ["-I", dirname]
-            dirs += [dirname]
+            dirs.append(dirname)
     return incl_args
 
 # Extracts all headers from the dependencies, and the .rel files to use with
@@ -156,7 +159,7 @@ def _sdcc_z180_c_library_impl(ctx):
     for source_file in source_files:
         # Compile each file to a .rel individually.
         single_rel_file = ctx.actions.declare_file("{}.rel".format(source_file.basename))
-        all_rel_files += [single_rel_file]
+        all_rel_files.append(single_rel_file)
         all_args = _SDCC_OPTIONS + [
             "--nostdinc",
         ] + lib_args + incl_args + [
@@ -261,7 +264,7 @@ def _sdcc_z180_c_binary_impl(ctx):
         for src_file in src_target.files.to_list():
             # Compile src_file here.
             obj = ctx.actions.declare_file("{}.rel".format(src_file.basename))
-            obj_files += [obj]
+            obj_files.append(obj)
             args = ctx.actions.args()
             args.add("-o", obj.path)
             args.add("-c", src_file.path)
@@ -385,7 +388,7 @@ def _sdcc_z180_asm_library_impl(ctx):
     all_rel_files = []
     for source_file in source_files:
         single_rel_file = ctx.actions.declare_file("{}.rel".format(source_file.basename))
-        all_rel_files += [single_rel_file]
+        all_rel_files.append(single_rel_file)
         all_args = [
             "-l",  # generate lst file
             "-o",  # generate object (rel) file
@@ -441,57 +444,57 @@ sdcc_z180_toolchain = rule(
     attrs = {
         "compiler": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "linker": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "assembler": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "librarian": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "preprocessor": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "hextocom": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "libs": attr.label(
-            cfg = "host",
+            cfg = "exec",
         ),
         "runtime_libs": attr.label_list(
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             default = [],
         ),
         "includes": attr.label(
-            cfg = "host",
+            cfg = "exec",
         ),
         "objcopy": attr.label(
-            cfg = "host",
+            cfg = "exec",
         ),
         "crt0": attr.label(
             allow_files = True,
-            cfg = "host",
+            cfg = "exec",
             executable = False,
         ),
         "deps": attr.label_list(),
     },
 )
 
-def sdcc_z180_cpm_emu_run(name, binary, visibility = None, rule = native.sh_binary, env = {}):
+def sdcc_z180_cpm_emu_run(name, binary, visibility = None, rule = sh_binary, env = {}):
     rule(
         name = name,
         srcs = [Label("//build:gen_runner.sh")],
@@ -515,5 +518,5 @@ def sdcc_z180_cpm_test(name, binary, visibility = None):
         name,
         binary,
         visibility,
-        native.sh_test,
+        sh_test,
     )

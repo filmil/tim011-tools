@@ -4,58 +4,57 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-  name = "binaries",
-  srcs = [
-    "bin/sdar",
-    "bin/sdasz80",
-    "bin/sdcc",
-    "bin/sdcpp",
-    "bin/sdldz80",
-    "bin/sdobjcopy",
-  ],
+    name = "binaries",
+    srcs = [
+        "bin/sdar",
+        "bin/sdasz80",
+        "bin/sdcc",
+        "bin/sdcpp",
+        "bin/sdldz80",
+        "bin/sdobjcopy",
+    ],
 )
 
 filegroup(
-  name = "sdld",
-  srcs = [
-    "bin/sdldz80",
-  ],
+    name = "sdld",
+    srcs = [
+        "bin/sdldz80",
+    ],
 )
 
 filegroup(
-  name = "sdcpp",
-  srcs = [
-    "bin/sdcpp",
-  ],
+    name = "sdcpp",
+    srcs = [
+        "bin/sdcpp",
+    ],
 )
 
 filegroup(
-  name = "sdar",
-  srcs = [
-    "bin/sdar",
-  ],
-)
-
-
-filegroup(
-  name = "sdas",
-  srcs = [
-    "bin/sdasz80",
-  ],
+    name = "sdar",
+    srcs = [
+        "bin/sdar",
+    ],
 )
 
 filegroup(
-  name = "sdobjcopy",
-  srcs = [
-    "bin/sdobjcopy",
-  ],
+    name = "sdas",
+    srcs = [
+        "bin/sdasz80",
+    ],
 )
 
 filegroup(
-  name = "sdcc",
-  srcs = [
-    "bin/sdcc",
-  ],
+    name = "sdobjcopy",
+    srcs = [
+        "bin/sdobjcopy",
+    ],
+)
+
+filegroup(
+    name = "sdcc",
+    srcs = [
+        "bin/sdcc",
+    ],
 )
 
 filegroup(
@@ -69,7 +68,7 @@ filegroup(
     name = "includes_z180",
     srcs = [
         "share/sdcc/include/z180/z180.h",
-    ] + glob(["share/sdcc/include/*.h"])
-      + glob(["share/sdcc/include/asm/z80/*.h"]),
+    ] + glob(["share/sdcc/include/*.h"]) + glob([
+        "share/sdcc/include/asm/z80/*.h",
+    ]),
 )
-

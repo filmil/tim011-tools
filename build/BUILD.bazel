@@ -1,3 +1,4 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//build:rules.bzl", "mescc_toolchain")
 load("//build:sdcc.bzl", "sdcc_z180_toolchain")
 

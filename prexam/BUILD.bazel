@@ -1,5 +1,5 @@
 load("//build:rules.bzl", "mescc_binary")
-load("//build:sdcc.bzl", "sdcc_z180_asm_library", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
+load("//build:sdcc.bzl", "sdcc_z180_c_binary", "sdcc_z180_cpm_emu_run")
 
 mescc_binary(
     name = "prexam",

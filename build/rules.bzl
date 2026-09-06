@@ -19,8 +19,8 @@ def _mescc_binary_impl(ctx):
     include_files = []
     for target in ctx.attr.deps:
         for file in target.files.to_list():
-            deps += [file]
-            include_files += [file.path]
+            deps.append(file)
+            include_files.append(file.path)
     ctx.actions.run(
         mnemonic = "MESCC",
         outputs = [out_file],
@@ -59,10 +59,9 @@ mescc_toolchain = rule(
     implementation = _mescc_toolchain_impl,
     attrs = {
         "compiler": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
-        "deps": attr.label_list(
-        ),
+        "deps": attr.label_list(),
     },
 )
