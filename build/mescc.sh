@@ -53,7 +53,14 @@ readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
 trap "rm -fr ${_tmpdir}" EXIT
 
 readonly _mescc="$(rlocation mescc/cc.com)"
-readonly _mescc_srcdir="${_script_dir}/mescc_compiler.runfiles/mescc"
+# The directory of the @mescc files, found through cc.com: under Bzlmod
+# the repository's runfiles directory has its canonical name (such as
+# +_repo_rules+mescc), not "mescc".
+readonly _mescc_srcdir="$(dirname "${_mescc}")"
+if [[ ! -f "${_mescc}" ]]; then
+  echo "ERROR: cannot find mescc/cc.com in the runfiles" >&2
+  exit 1
+fi
 readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
 
 cp --dereference -R ${_mescc_srcdir}/* ${_tmpdir}
