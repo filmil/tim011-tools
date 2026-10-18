@@ -16,8 +16,12 @@ version_file="$1"
 shift
 
 version="$(tr -d '[:space:]' < "${version_file}")"
-if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "FAIL: ${version_file} should hold one Bazel version, not '${version}'" >&2
+if [[ -z "${version}" ]]; then
+  echo "FAIL: ${version_file} is empty; it should name the Bazel version" >&2
+  exit 1
+fi
+if [[ "$#" -eq 0 ]]; then
+  echo "FAIL: no workflow files to check" >&2
   exit 1
 fi
 
@@ -29,8 +33,14 @@ for workflow in "$@"; do
     failed=1
   fi
   # A Bazel version named in the workflow, which would override
-  # .bazelversion.
-  if grep -nE '^[[:space:]]*(bazel-version|bazelisk-version|version):|USE_BAZEL_VERSION' "${workflow}"; then
+  # .bazelversion: USE_BAZEL_VERSION anywhere outside a comment, or a
+  # `version:` input inside a setup-bazel step. Other actions' `version:`
+  # inputs are left alone.
+  if grep -vE '^[[:space:]]*#' "${workflow}" | grep -nE 'USE_BAZEL_VERSION|bazelisk-version:' \
+      || awk '/^[[:space:]]*- / { in_bazel = 0 }
+              /uses:[[:space:]]*[^[:space:]]*setup-bazel/ { in_bazel = 1 }
+              in_bazel && /^[[:space:]]*(version|bazel-version):/ { print NR ": " $0; found = 1 }
+              END { exit !found }' "${workflow}"; then
     echo "FAIL: ${workflow} names a Bazel version; .bazelversion (${version}) must be the only one" >&2
     failed=1
   fi

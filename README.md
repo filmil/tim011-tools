@@ -378,7 +378,8 @@ Take note that speed of emulator and real TIM-011 aren't the same.
 Modified emulator can be found inside CPMEmulator directory.
 To compile it, for now you'll need Linux and these libraries:
 
-* for Debian/Ubuntu-based distributions: libx11-dev libxext-dev
+* for Debian/Ubuntu-based distributions: libx11-dev libxext-dev, and xvfb
+  and xauth to build the MESCC targets, which run the emulator under xvfb-run
 * for Arch-based distributions: lib32-libx11 lib32-libxext
 
 Window and video display code was taken from an old project of mine
