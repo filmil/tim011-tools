@@ -6,6 +6,7 @@ on:
     branches: [ bazel-build ]
   schedule:
     - cron: "43 7 * * 0"
+  workflow_dispatch:
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
@@ -14,14 +15,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup bazel
-        uses: abhinavsingh/setup-bazel@v3
-        with:
-          version: 6.4.0
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      # The CP/M emulator draws in an X11 window (README.md).
+      - name: Install the X11 headers
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libx11-dev libxext-dev
+      # Bazelisk, which runs the Bazel version in .bazelversion. Do not name
+      # a version here: //:ci_bazel_version_test fails if one is.
+      - name: Setup bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
       - name: Build
         run: "bazel build //..."
       - name: Test
-        run: "bazel test //..."
-
+        run: "bazel test //... --test_output=errors"

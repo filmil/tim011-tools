@@ -1,7 +1,20 @@
 # This rule just shows how you can invoke a binary from an external
 # repo.
 load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 buildifier(
     name = "buildifier",
+)
+
+# CI must build with the Bazel in .bazelversion, through Bazelisk. From
+# September to October 2026 it installed Bazel 6.4.0 instead, and every
+# weekly run failed.
+sh_test(
+    name = "ci_bazel_version_test",
+    srcs = ["scripts/ci_bazel_version_test.sh"],
+    args = [
+        "$(location .bazelversion)",
+    ] + ["$(location %s)" % f for f in glob([".github/workflows/*.yml"])],
+    data = [".bazelversion"] + glob([".github/workflows/*.yml"]),
 )
