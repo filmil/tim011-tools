@@ -7,6 +7,16 @@ buildifier(
     name = "buildifier",
 )
 
+# Every workflow file. Empty is allowed here; the test fails on its own if
+# it gets no workflows.
+_WORKFLOWS = glob(
+    [
+        ".github/workflows/*.yml",
+        ".github/workflows/*.yaml",
+    ],
+    allow_empty = True,
+)
+
 # CI must build with the Bazel in .bazelversion, through Bazelisk. From
 # September to October 2026 it installed Bazel 6.4.0 instead, and every
 # weekly run failed.
@@ -15,6 +25,23 @@ sh_test(
     srcs = ["scripts/ci_bazel_version_test.sh"],
     args = [
         "$(location .bazelversion)",
-    ] + ["$(location %s)" % f for f in glob([".github/workflows/*.yml"])],
-    data = [".bazelversion"] + glob([".github/workflows/*.yml"]),
+    ] + ["$(location %s)" % f for f in _WORKFLOWS],
+    data = [".bazelversion"] + _WORKFLOWS,
+)
+
+# The check above must fail on the workflow that broke CI: Bazel 6.4.0
+# through abhinavsingh/setup-bazel.
+sh_test(
+    name = "ci_bazel_version_rejects_pinned_test",
+    srcs = ["scripts/expect_failure.sh"],
+    args = [
+        "$(location scripts/ci_bazel_version_test.sh)",
+        "$(location .bazelversion)",
+        "$(location scripts/testdata/pinned_bazel.yml)",
+    ],
+    data = [
+        ".bazelversion",
+        "scripts/ci_bazel_version_test.sh",
+        "scripts/testdata/pinned_bazel.yml",
+    ],
 )

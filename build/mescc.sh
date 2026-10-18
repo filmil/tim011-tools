@@ -53,17 +53,17 @@ readonly _tmpdir="$(mktemp -d || mktemp -d -t bazel-tmp)"
 trap "rm -fr ${_tmpdir}" EXIT
 
 readonly _mescc="$(rlocation mescc/cc.com)"
+if [[ -z "${_mescc}" || ! -f "${_mescc}" ]]; then
+  echo "ERROR: cannot find mescc/cc.com in the runfiles" >&2
+  exit 1
+fi
 # The directory of the @mescc files, found through cc.com: under Bzlmod
 # the repository's runfiles directory has its canonical name (such as
 # +_repo_rules+mescc), not "mescc".
 readonly _mescc_srcdir="$(dirname "${_mescc}")"
-if [[ ! -f "${_mescc}" ]]; then
-  echo "ERROR: cannot find mescc/cc.com in the runfiles" >&2
-  exit 1
-fi
 readonly _emulator="$(rlocation tim011_tools/CPMEmulator/cpm)"
 
-cp --dereference -R ${_mescc_srcdir}/* ${_tmpdir}
+cp --dereference -R "${_mescc_srcdir}"/* "${_tmpdir}"
 cp "${_emulator}" "${_tmpdir}/cpm"
 mv ${_tmpdir}/small_c_17/* ${_tmpdir}
 cp "${gotopt2_source_path}" "${_tmpdir}"/"${gotopt2_source_file}"
